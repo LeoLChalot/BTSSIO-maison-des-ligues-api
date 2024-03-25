@@ -22,7 +22,11 @@ app.use(
  );
 
 
+<<<<<<< HEAD
 const whiteList = ['http://localhost:3000', 'http://192.168.1.35:3000/','http://localhost:5173', 'http://localhost:50433', 'http://localhost:45820'];
+=======
+const whiteList = ['http://localhost:3000', 'http://localhost:5173', 'http://192.168.1.35:3000/'];
+>>>>>>> 24f878a29e8e6c18469eb33b17c7eb9e76f18119
 const corsOptions = {
    origin: function (origin, callback) {
       if (whiteList.indexOf(origin) !== -1 || !origin) {
@@ -39,6 +43,11 @@ app.use(express.json());
 // app.use(cors());
 app.use(cors(corsOptions));
 
+/** app.get("/", (req, res) => {
+	const root = __dirname;
+	res.sendFile(root + "/coucou.html");
+})
+*/
 // ? Router inscription / connexion
 app.use('/m2l/user', routesUsers);
 
