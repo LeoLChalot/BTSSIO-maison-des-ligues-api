@@ -178,6 +178,7 @@ exports.login = async (req, res) => {
       res.status(200).json({
          success: true,
          message: 'Utilisateur connecté',
+         isAdmin: utilisateur.isAdmin,
          infos: {
             utilisateur: {
                pseudo: utilisateur.pseudo,

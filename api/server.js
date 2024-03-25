@@ -22,7 +22,7 @@ app.use(
  );
 
 
-const whiteList = ['http://localhost:3000', 'http://localhost:5173'];
+const whiteList = ['http://localhost:3000', 'http://192.168.1.35:3000/','http://localhost:5173', 'http://localhost:50433', 'http://localhost:45820'];
 const corsOptions = {
    origin: function (origin, callback) {
       if (whiteList.indexOf(origin) !== -1 || !origin) {
