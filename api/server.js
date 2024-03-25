@@ -22,11 +22,8 @@ app.use(
  );
 
 
-<<<<<<< HEAD
-const whiteList = ['http://localhost:3000', 'http://192.168.1.35:3000/','http://localhost:5173', 'http://localhost:50433', 'http://localhost:45820'];
-=======
+
 const whiteList = ['http://localhost:3000', 'http://localhost:5173', 'http://192.168.1.35:3000/'];
->>>>>>> 24f878a29e8e6c18469eb33b17c7eb9e76f18119
 const corsOptions = {
    origin: function (origin, callback) {
       if (whiteList.indexOf(origin) !== -1 || !origin) {
@@ -63,6 +60,7 @@ app.use('/m2l/panier', routesPanier);
 // ? Router Tests
 app.use('/m2l/tests', routesTests);
 
+/*
 // ? Router Error 400
 app.use((req, res, next) => {
    res.status(400).json({ message: 'Bad request' });
@@ -83,7 +81,7 @@ app.use((err, req, res, next) => {
    console.error(err.stack);
    res.status(500).json({ message: 'Internal server error' });
 });
-
+*/
 module.exports = app.listen(PORT, () => {
    console.log(`Listen on port ${PORT}`);
 });
