@@ -67,6 +67,31 @@ app.use('/m2l/admin', routesAdmin);
 // ? Router Panier
 app.use('/m2l/panier', routesPanier);
 
+// ? Router Tests
+app.use('/m2l/tests', routesTests);
+
+/*
+// ? Router Error 400
+app.use((req, res, next) => {
+   res.status(400).json({ message: 'Bad request' });
+});
+
+// ? Router Error 401
+app.use((req, res, next) => {
+   res.status(401).json({ message: 'Unauthorized' });
+});
+
+// ? Router Error 404
+app.use((req, res) => {
+   res.status(404).json({ message: 'Page not found' });
+});
+
+// ? Router Error 500
+app.use((err, req, res, next) => {
+   console.error(err.stack);
+   res.status(500).json({ message: 'Internal server error' });
+});
+*/
 module.exports = app.listen(PORT, () => {
    console.log(`Listen on port ${PORT}`);
 });
