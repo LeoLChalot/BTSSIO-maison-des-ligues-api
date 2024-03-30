@@ -17,7 +17,7 @@ const routesTests = require('./routes/testsRoute');
 app.use(
    cookieParser(null, {
       sameSite: 'None',
-      secure: true,
+      secure: false,
    })
  );
 
@@ -28,27 +28,33 @@ const whiteList = [
 	'http://127.0.0.1:5173',
 	'http://192.168.58.199:5173',
 	'http://192.168.1.35:3000',
+	'http://localhost:52905/',
+	'http://localhost:55605/',
+	'http://localhost:56976/',
+	'http://127.0.0.1:56976/',
+	'http://127.0.0.1:55605',
 	'http://192.168.1.34:5173',
 	'http://localhost:5173',
 	'http://localhost:50433',
-	'http://localhost:45820'];
+	'http://localhost:45820',
+	'http://127.0.0.1:43336'];
 
 
-const corsOptions = {
-   origin: function (origin, callback) {
-      if (whiteList.indexOf(origin) !== -1 || !origin) {
-         callback(null, true);
-      } else {
-         callback(new Error('Not allowed by CORS'));
-      }
-   },
-   credentials: true,
-   optionsSuccessStatus: 200,
-};
+// const corsOptions = {
+//    origin: function (origin, callback) {
+//       if (whiteList.indexOf(origin) !== -1 || !origin) {
+//          callback(null, true);
+//       } else {
+//          callback(new Error('Not allowed by CORS'));
+//       }
+//    },
+//    credentials: true,
+//    optionsSuccessStatus: 200,
+// };
 
 app.use(express.json());
-// app.use(cors());
-app.use(cors(corsOptions));
+app.use(cors());
+// app.use(cors(corsOptions));
 
 /** app.get("/", (req, res) => {
 	const root = __dirname;
