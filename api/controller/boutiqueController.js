@@ -38,16 +38,26 @@ exports.getAllCategories = async (req, res) => {
       connexion = await ConnexionDAO.connect();
       const categorieDAO = new CategorieDAO();
       const result = await categorieDAO.find_all(connexion);
-      console.log(result);
-      res.status(200).json({
-         success: true,
-         message:
-            result[0].length > 1
-               ? 'Liste des categories'
-               : 'Infos catégorie',
-         infos: result[0],
+
+      if (result[0].length === 0) return res.status(404).json({
+         success: false,
+         message: 'Aucune categorie en base de données',
       });
-      return;
+
+      const categories = [];
+      for (let i = 0; i < result[0].length; i++) {
+         categories.push({
+            id: result[0][i].id_categorie,
+            nom: result[0][i].nom,
+         });
+      }
+
+      return res.status(200).json({
+         success: true,
+         message: 'Liste des categories',
+         infos: categories,
+      })
+
    } catch (error) {
       console.error('Error connecting shop:', error);
       throw error;
@@ -83,7 +93,7 @@ exports.getCategoryById = async (req, res) => {
          id: result[0][0].id_categorie,
          nom: result[0][0].nom,
       };
-      
+
       return res.status(200).json({
          success: true,
          message: "Informations sur la catégorie",
@@ -116,22 +126,21 @@ exports.getCategoryByName = async (req, res) => {
       const categorieDAO = new CategorieDAO();
       const result = await categorieDAO.find(connexion, findByNom);
       console.log(result);
-      if (result[0].length === 0) {
-         res.status(404).json({
-            success: false,
-            message: 'Categorie non trouvé',
-         });
-         return;
-      }
-      res.status(200).json({
+      if (result[0].length === 0) return res.status(404).json({
+         success: false,
+         message: 'Categorie non trouvé',
+      })
+
+      const categorie = {
+         id: result[0][0].id_categorie,
+         nom: result[0][0].nom,
+      };
+
+      return res.status(200).json({
          success: true,
-         message:
-            result[0].length > 1
-               ? 'Liste des categories'
-               : 'Infos catégorie',
-         infos: result[0],
-      });
-      return;
+         message: "Informations sur la catégorie",
+         infos: categorie,
+      })
    } catch (error) {
       console.error('Error connecting shop:', error);
       throw error;

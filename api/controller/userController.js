@@ -6,6 +6,9 @@ const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 
+const UTILISATEUR_DAO = new UtilisateurDAO();
+const PANIER_DAO = new PanierDAO();
+
 /**
  * ## Inscrire un utilisateur
  *
@@ -17,61 +20,49 @@ exports.register = async (req, res) => {
    let connexion;
    try {
       connexion = await ConnexionDAO.connect();
-      const utilisateur = new UtilisateurDAO();
-
       const { prenom, nom, pseudo, email, mot_de_passe } = req.body;
       const findWithMail = { email: email };
       const findWithPseudo = { pseudo: pseudo };
       const registerDate = new Date();
-
       // ? Veiller d'avoir un prenom, un nom, un pseudo, un email et un mot de passe
       if (prenom && nom && pseudo && email && mot_de_passe) {
+         // ? Verifier si le mail existe
+         const existMail = await UTILISATEUR_DAO.find(connexion, findWithMail);
+         // ! Envoyer une erreur si le mail existe
+         if (existMail[0].length !== 0) return res.status(404).json({
+            success: false,
+            message: 'Cet email est déjà utilisé',
+         });
+
+         // ? Verifier si le pseudo existe
+         const existPseudo = await UTILISATEUR_DAO.find(connexion, findWithPseudo);
+         // ! Envoyer une erreur si le pseudo existe
+         if (existPseudo[0].length !== 0) return res.status(404).json({
+            success: false,
+            message: 'Ce pseudo est déjà utilisé',
+         });
          const user = {
             id_utilisateur: uuidv4(),
             prenom: prenom,
             nom: nom,
             pseudo: pseudo,
             email: email,
-            mot_de_passe: mot_de_passe,
+            mot_de_passe: await bcrypt.hash(mot_de_passe, 10),
             is_admin: false,
             register_date: registerDate,
          };
-
-         // ? Verifier si le mail existe
-         const existMail = await utilisateur.find(connexion, findWithMail);
-
-         // ? Verifier si le pseudo existe
-         const existPseudo = await utilisateur.find(connexion, findWithPseudo);
-
-         // ! Envoyer une erreur si le mail existe
-         if (existMail[0].length !== 0) {
-            res.status(400).json({
-               success: false,
-               message: 'Cet email est déjà utilisé',
-            });
-            return;
-         }
-
-         // ! Envoyer une erreur si le pseudo existe
-         if (existPseudo[0].length !== 0) {
-            res.status(400).json({
-               success: false,
-               message: 'Ce pseudo est déjà utilisé',
-            });
-            return;
-         }
-
          // ? Creer l'utilisateur
-         await utilisateur.create(connexion, user);
-
-         res.status(200).json({ message: 'Le compté à été créé avec succès' });
+         await UTILISATEUR_DAO.create(connexion, user);
+         return res.status(200).json({
+            success: true,
+            message: 'Le compté à été créé avec succès'
+         });
       } else {
          // ! Envoyer une erreur si l'un des champs du formulaire est manquant
-         res.status(400).end({
+         return res.status(404).end({
             success: false,
             message: 'Informations erronées',
          });
-         return
       }
    } catch (error) {
       console.error('Error connecting shop:', error);
@@ -94,38 +85,29 @@ exports.login = async (req, res) => {
    let connexion;
    try {
       connexion = await ConnexionDAO.connect();
-      const utilisateurDAO = new UtilisateurDAO();
-      const panierDAO = new PanierDAO();
       const currentDate = new Date();
 
       const { login, mot_de_passe } = req.body;
 
       // ? Veiller d'avoir un login et un mot de passe
-      if (!login || !mot_de_passe) {
-         res.status(205).json({
-            success: false,
-            msg: 'Email et mot de passe requis',
-         });
-         return;
-      }
+      if (!login || !mot_de_passe) return res.status(205).json({
+         success: false,
+         msg: 'Email et mot de passe requis',
+      })
 
       const findWithMail = { email: login };
       const findWithPseudo = { pseudo: login };
 
       // ? Trouver l'utilisateur
-      let utilisateur = await utilisateurDAO.find(connexion, findWithMail);
-      if (utilisateur[0].length === 0) {
-         utilisateur = await utilisateurDAO.find(connexion, findWithPseudo);
-      }
+      let utilisateur = await UTILISATEUR_DAO.find(connexion, findWithMail);
+
+      if (utilisateur[0].length === 0) utilisateur = await UTILISATEUR_DAO.find(connexion, findWithPseudo);
 
       // ! Envoyer une erreur si le couple login/mdp ne correspond pas
-      if (utilisateur[0].length === 0) {
-         res.status(205).json({
-            success: false,
-            message: "L'email et le mot de passe ne correspondent pas",
-         });
-         return;
-      }
+      if (utilisateur[0].length === 0) return res.status(205).json({
+         success: false,
+         message: "L'email et le mot de passe ne correspondent pas",
+      })
 
       utilisateur = {
          id_utilisateur: utilisateur[0][0].id_utilisateur,
@@ -136,17 +118,14 @@ exports.login = async (req, res) => {
       };
 
       // ? Vérifier le mot de passe
-      if (!bcrypt.compareSync(mot_de_passe, utilisateur['hash'])) {
-         res.status(205).json({
-            success: false,
-            message: 'Mot de passe incorrect',
-         });
-         return;
-      }
+      if (!bcrypt.compareSync(mot_de_passe, utilisateur['hash'])) return res.status(205).json({
+         success: false,
+         message: 'Mot de passe incorrect',
+      })
 
       // ? Récupérer le panier de l'utilisateur
       const findWithIdUtilisateur = { id_utilisateur: utilisateur['id_utilisateur'] };
-      let panier = await panierDAO.find(connexion, findWithIdUtilisateur);
+      let panier = await PANIER_DAO.find(connexion, findWithIdUtilisateur);
 
       // ? Creer un nouveau panier si aucun panier n'est trouvé
       if (panier[0].length === 0) {
@@ -155,8 +134,8 @@ exports.login = async (req, res) => {
             id_utilisateur: utilisateur['id_utilisateur'],
             date: currentDate,
          };
-         await panierDAO.create(connexion, newPanier);
-         panier = await panierDAO.find(connexion, findWithIdUtilisateur);
+         await PANIER_DAO.create(connexion, newPanier);
+         panier = await PANIER_DAO.find(connexion, findWithIdUtilisateur);
       }
 
       // ? Création du token
@@ -164,7 +143,7 @@ exports.login = async (req, res) => {
          {
             email: utilisateur.email,
             pseudo: utilisateur.pseudo,
-            role: utilisateur.isAdmin,
+            role: utilisateur.isAdmin ? true : false,
             panier: panier[0][0].id_panier,
          },
          process.env.SECRET_KEY,
@@ -175,18 +154,19 @@ exports.login = async (req, res) => {
 
       console.log('jwt_token:', jwt_token);
 
-      res.status(200).json({
+      return res.status(200).json({
          success: true,
          message: 'Utilisateur connecté',
-         isAdmin: utilisateur.isAdmin,
+         isAdmin: utilisateur.isAdmin ? true : false,
          infos: {
             utilisateur: {
                pseudo: utilisateur.pseudo,
+               panier: panier[0][0].id_panier,
                jwt_token: jwt_token,
             },
          },
-      });
-      return;
+      })
+
    } catch (error) {
       console.error('Error connecting shop:', error);
       throw error;
@@ -236,6 +216,37 @@ exports.getUserFromEmail = async (req, res) => {
       }
 
       res.status(200).json(result[0][0]);
+   } catch (error) {
+      console.error('Error connecting user:', error);
+      throw error;
+   } finally {
+      if (connexion) {
+         ConnexionDAO.disconnect(connexion);
+      }
+   }
+};
+
+
+exports.deleteUserWithPseudo = async (req, res) => {
+   let connexion;
+   try {
+      connexion = await ConnexionDAO.connect();
+
+      const { pseudo } = req.params;
+      const findWithPseudo = { pseudo: pseudo };
+
+      let result = await UTILISATEUR_DAO.delete(connexion, findWithPseudo);
+
+      if (!result) return res.status(404).json({
+         success: false,
+         message: "Cet utilisateur n'existe pas",
+      });
+
+      return res.status(200).json({
+         success: true,
+         message: "Utilisateur supprimé",
+      });
+
    } catch (error) {
       console.error('Error connecting user:', error);
       throw error;

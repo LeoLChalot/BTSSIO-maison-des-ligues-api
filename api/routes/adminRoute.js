@@ -3,6 +3,9 @@ const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 
+// const cookieAdmin = require('../middleware/verifAdmin');
+const bearerAdmin = require('../middleware/verifAdmin');
+
 const MIME_TYPES = {
    'image/jpg': 'jpg',
    'image/jpeg': 'jpg',
@@ -22,38 +25,12 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 const adminController = require('../controller/adminController');
 
-// router.get('/', async (req, res) => {
-//    try {
-//       res.status(200).json(req.user);
-//    } catch (error) {
-//       console.error('Error fetching current user:', error);
-//       res.status(500).send('Internal Server Error');
-//    }
-// });
+// router.use(cookieAdmin)
+router.use(bearerAdmin)
 
-// router.delete(
-//    '/user',
-//    adminController.deleteUserByPseudo,
-//    async (req, res) => {
-//       return res.status(200).json({ success: true });
-//    }
-// );
+router.post('/categorie/new', adminController.createCategory);
 
-router.post(
-   '/categorie',
-   adminController.createCategory,
-   async (req, res) => {
-      return res.status(200).json({ success: true });
-   }
-);
-
-router.delete(
-   '/categorie',
-   adminController.deleteCategory,
-   async (req, res) => {
-      return res.status(200).json({ success: true });
-   }
-);
+router.delete('/categorie/:id', adminController.deleteCategory);
 
 router.post(
    '/article',

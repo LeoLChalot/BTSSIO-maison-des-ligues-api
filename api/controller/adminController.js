@@ -5,6 +5,11 @@ const ArticleDAO = require('../models/ArticleDAO');
 
 const { v4: uuidv4 } = require('uuid');
 
+const UTILISATEUR_DAO = new UtilisateurDAO();
+const CATEGORIE_DAO = new CategorieDAO();
+const ARTICLE_DAO = new ArticleDAO();
+
+
 /**
  * Retourne un utilisateur par son login.
  *
@@ -95,36 +100,47 @@ exports.deleteUserByPseudo = async (req, res) => {
  * @return {JSON} L'objet de réponse et le message.
  */
 exports.createCategory = async (req, res) => {
+   let connexion
    try {
-      const categorieDAO = new CategorieDAO();
-
+      connexion = await ConnexionDAO.connect();
       const nom = req.body.nom;
 
-      if (!nom) {
-         return res
-            .status(404)
-            .json({
-               success: false,
-               message: 'Categorie non trouvée',
-            });
-      }
+      if (!nom) return res
+         .status(404)
+         .json({
+            success: false,
+            message: 'Categorie non trouvée',
+         });
+
+      const findWithNom = {
+         nom: nom,
+      };
+      const exists = await CATEGORIE_DAO.find(
+         connexion,
+         findWithNom
+      )
+      if (exists[0].length > 0) return res
+         .status(404)
+         .json({
+            success: false,
+            message: 'La catégorie existe déjà',
+         });
 
       const categorie = {
          id_categorie: uuidv4(),
          nom: nom,
       };
 
-      const result = await categorieDAO.create(
-         await ConnexionDAO.connect(),
+      const result = await CATEGORIE_DAO.create(
+         connexion,
          categorie
       );
 
-      if (result) {
-         res.status(201).json({
-            success: true,
-            message: 'Categorie ajoutée !',
-         });
-      }
+      if (result) return res.status(200).json({
+         success: true,
+         message: 'Categorie ajoutée !',
+      });
+
    } catch (error) {
       console.error('Error connecting shop:', error);
       throw error;
@@ -144,22 +160,22 @@ exports.deleteCategory = async (req, res) => {
    try {
       const connexion = await ConnexionDAO.connect();
       const categorieDAO = new CategorieDAO();
-
-      const { nom } = req.body;
-      const findWithNom = {
-         nom: nom,
-      };
+      const id = req.params.id;
+      const findWithId = { id_categorie: id };
       const result = await categorieDAO.delete(
          connexion,
-         findWithNom
+         findWithId
       );
 
-      if (result) {
-         res.status(200).json({
-            success: true,
-            message: 'Categorie supprimée !',
-         });
-      }
+      return (result[0].length == 0) ? res.status(404).json({
+         success: false,
+         message: 'La catégorie n\'existe pas !',
+      }) : res.status(200).json({
+         success: true,
+         message: 'Categorie supprimée !',
+      })
+
+
    } catch (error) {
       console.error('Error connecting shop:', error);
       throw error;
