@@ -22,22 +22,22 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 const adminController = require('../controller/adminController');
 
-router.get('/', async (req, res) => {
-   try {
-      res.status(200).json(req.user);
-   } catch (error) {
-      console.error('Error fetching current user:', error);
-      res.status(500).send('Internal Server Error');
-   }
-});
+// router.get('/', async (req, res) => {
+//    try {
+//       res.status(200).json(req.user);
+//    } catch (error) {
+//       console.error('Error fetching current user:', error);
+//       res.status(500).send('Internal Server Error');
+//    }
+// });
 
-router.delete(
-   '/user',
-   adminController.deleteUserByPseudo,
-   async (req, res) => {
-      return res.status(200).json({ success: true });
-   }
-);
+// router.delete(
+//    '/user',
+//    adminController.deleteUserByPseudo,
+//    async (req, res) => {
+//       return res.status(200).json({ success: true });
+//    }
+// );
 
 router.post(
    '/categorie',
@@ -73,13 +73,7 @@ router.put(
    }
 );
 
-router.delete(
-   '/article',
-   adminController.deleteArticle,
-   async (req, res) => {
-      return res.status(200).json({ success: true });
-   }
-);
+router.delete('/article/:id', adminController.deleteArticle);
 
 
 

@@ -26,22 +26,16 @@ router.get('/categories', async (req, res) => {
    }
 });
 
-router.get('/articles', async (req, res) => {
-   try {
-      const { nom, id_categorie, id_article } = req.query;
-      if (nom) {
-         boutiqueController.getArticleByName(req, res);
-      } else if (id_categorie) {
-         boutiqueController.getArticlesByIdCategory(req, res);
-      } else if (id_article) {
-         boutiqueController.getArticleById(req, res);
-      } else {
-         boutiqueController.getAllArticles(req, res);
-      }
-   } catch (error) {
-      console.error('Error connecting shop:', error);
-      throw error;
-   } 
-});
+
+router.get('/categories/all', boutiqueController.getAllCategories)
+router.get('/categorie/id/:id', boutiqueController.getCategoryById)
+router.get('/categorie/nom/:nom', boutiqueController.getCategoryByName)
+
+router.get('/articles/all', boutiqueController.getAllArticles)
+router.get('/articles/categorie/id/:id', boutiqueController.getArticlesByIdCategory)
+
+router.get('/article/id/:id', boutiqueController.getArticleById)
+router.get('/article/nom/:nom', boutiqueController.getArticleByName)
+
 
 module.exports = router;

@@ -40,21 +40,21 @@ const whiteList = [
 	'http://127.0.0.1:43336'];
 
 
-// const corsOptions = {
-//    origin: function (origin, callback) {
-//       if (whiteList.indexOf(origin) !== -1 || !origin) {
-//          callback(null, true);
-//       } else {
-//          callback(new Error('Not allowed by CORS'));
-//       }
-//    },
-//    credentials: true,
-//    optionsSuccessStatus: 200,
-// };
+const corsOptions = {
+   origin: function (origin, callback) {
+      if (whiteList.indexOf(origin) !== -1 || !origin) {
+         callback(null, true);
+      } else {
+         callback(new Error('Not allowed by CORS'));
+      }
+   },
+   credentials: true,
+   optionsSuccessStatus: 200,
+};
 
 app.use(express.json());
-app.use(cors());
-// app.use(cors(corsOptions));
+// app.use(cors());
+app.use(cors(corsOptions));
 
 /** app.get("/", (req, res) => {
 	const root = __dirname;
