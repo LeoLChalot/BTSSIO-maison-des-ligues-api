@@ -353,7 +353,6 @@ exports.validateCart = async (req, res) => {
    let connexion;
    try {
       connexion = await ConnexionDAO.connect();
-      console.log({ validateCart: req.params.pseudo });
       const { pseudo } = req.params;
 
 
@@ -429,7 +428,7 @@ exports.validateCart = async (req, res) => {
 
       }
 
-      console.log({ prix: prix });
+      console.log({ prix: prix, id_panier: listeArticles[0].id_panier });
 
       const commande = {
          id: uuidv4(),
