@@ -5,6 +5,7 @@ const Articles_StandbyDAO = require('../models/Articles_StandbyDAO');
 const UtilisateurDAO = require('../models/UtilisateurDAO');
 const CommandeDAO = require('../models/CommandeDAO');
 const Panier_ProduitsDAO = require('../models/Panier_ProduitsDAO');
+const CategorieDAO = require('../models/CategorieDAO');
 const Details_CommandesDAO = require('../models/Details_CommandesDAO');
 
 const { v4: uuidv4 } = require('uuid');
@@ -13,6 +14,33 @@ const UTILISATEUR_DAO = new UtilisateurDAO();
 const PANIER_DAO = new PanierDAO();
 const PANIER_PRODUITS_DAO = new Panier_ProduitsDAO();
 const ARTICLES_DAO = new ArticleDAO();
+const CATEGORIE_DAO = new CategorieDAO();
+const DETAILS_COMMANDE_DAO = new Details_CommandesDAO();
+const COMMANDE_DAO = new CommandeDAO();
+
+
+const getCategoryById = async (connexion, id) => {
+   try {
+      const findById = {
+         id_categorie: id,
+      };
+
+      const result = await CATEGORIE_DAO.find(connexion, findById);
+
+      console.log(result);
+
+      if (result[0].length == 0) {
+         return { id: id, nom: 'Categorie non trouvée' };
+      }
+
+      return { id: id, nom: result[0][0].nom };
+
+   } catch (error) {
+      console.error('Error connecting shop:', error);
+      throw error;
+   }
+};
+
 
 /**
  * Retrieves the content of a user's shopping cart based on the provided pseudo.
@@ -60,7 +88,7 @@ exports.getCartContent = async (req, res) => {
          findWithIdUtilisateur
       );
 
-      console.log({ panier: panierData[0] });
+      console.log({ panierDATA: panierData[0] });
 
       if (panierData.length === 0) {
          return res.status(404).json({
@@ -76,20 +104,50 @@ exports.getCartContent = async (req, res) => {
          findWithIdPanier
       );
 
-      console.log({ articles: articlesData[0][0] });
+
+      let listeArticles = []
+      let prix_total = 0
+
+      for (const articleData of articlesData[0]) {
+         const fetchArticle = await ARTICLES_DAO.find(
+            connexion,
+            { id_article: articleData.id_article }
+         )
+
+         const categorie = await getCategoryById(connexion, fetchArticle[0][0].categorie_id);
+
+         const article = {
+            article: {
+               id: fetchArticle[0][0].id_article,
+               nom: fetchArticle[0][0].nom,
+               description: fetchArticle[0][0].description,
+               image: fetchArticle[0][0].photo,
+               prix: fetchArticle[0][0].prix,
+               quantite: fetchArticle[0][0].quantite,
+               categorie: {
+                  id: categorie.id,
+                  nom: categorie.nom,
+               }
+            },
+            quantite: articleData.quantite_articles,
+            sous_total: articleData.quantite_articles * fetchArticle[0][0].prix,
+
+         }
+         prix_total += article.sous_total
+         listeArticles.push(article)
+      }
 
       const panier = {
-         id_panier: panierData[0][0].id_panier,
-         pseudo: pseudo,
-         articles: articlesData[0],
-      };
+         id: panierData[0][0].id_panier,
+         prix_total: prix_total,
+         articles: listeArticles,
+      }
 
-      res.status(200).json({
+      return res.status(200).json({
          success: true,
-         message: 'Contenu du panier',
-         infos: {
-            panier: panier,
-         },
+         message: `Contenu du panier de ${pseudo}`,
+         infos: { panier: panier },
+
       });
    } catch (error) {
       console.error('Error connecting shop:', error);
@@ -356,49 +414,47 @@ exports.validateCart = async (req, res) => {
    let connexion;
    try {
       connexion = await ConnexionDAO.connect();
-      const { pseudo } = req.params;
+      const pseudo = req.params.pseudo;
+      const panier = req.body.panier;
+      console.log(pseudo);
+      console.log(panier);
 
-      const utilisateurDAO = new UtilisateurDAO();
-      const panierDAO = new PanierDAO();
-      const panier_ProduitsDAO = new Panier_ProduitsDAO();
-      const commandeDAO = new CommandeDAO();
-      const details_CommandesDAO = new Details_CommandesDAO();
-      let prix = 0;
+
       const findUtilisateurWithPseudo = {
          pseudo: pseudo,
       };
 
-      const utilisateurData = await utilisateurDAO.find(
+      const utilisateurData = await UTILISATEUR_DAO.find(
          connexion,
          findUtilisateurWithPseudo
       );
 
-      console.log({ result: utilisateurData[0][0].id_utilisateur });
+
+      console.log(utilisateurData);
+
+
       const email = utilisateurData[0][0].email;
 
       const findPanierWithIdUtilisateur = {
          id_utilisateur: utilisateurData[0][0].id_utilisateur,
       };
 
-      const panierData = await panierDAO.find(
+      const panierData = await PANIER_DAO.find(
          connexion,
          findPanierWithIdUtilisateur
       );
 
-      if (panierData[0].length === 0) {
-         return res.status(404).json({
-            success: false,
-            message: "Le panier n'existe pas",
-         });
-      }
+      if (panierData[0].length === 0) return res.status(404).json({
+         success: false,
+         message: "Le panier n'existe pas",
+      });
 
       const findArticleWithIdPanier = panierData[0][0].id_panier;
-      const articlesData = await panier_ProduitsDAO.find_and_group(
+      const articlesData = await PANIER_PRODUITS_DAO.find_and_group(
          connexion,
          findArticleWithIdPanier
       );
 
-      console.log({ "articlesData": articlesData[0] });
 
       const listeArticles = articlesData[0];
       for (let i = 0; i < listeArticles.length; i++) {
@@ -406,7 +462,6 @@ exports.validateCart = async (req, res) => {
          const panierId = listeArticles[i].id_panier;
          const articleId = listeArticles[i].id_article;
          const quantite = listeArticles[i].quantite_articles;
-         prix += listeArticles[i].prix_unite * quantite;
          const article_commande = {
             id: uuidv4(),
             email: email,
@@ -418,27 +473,24 @@ exports.validateCart = async (req, res) => {
             id_article: articleId,
             id_panier: panierId,
          };
-         details_CommandesDAO.create(connexion, article_commande);
+         DETAILS_COMMANDE_DAO.create(connexion, article_commande);
 
          for (let j = 0; j < quantite; j++) {
-            await panier_ProduitsDAO.delete(
+            await PANIER_PRODUITS_DAO.delete(
                connexion,
                findWithIdArticle
             );
          }
-
       }
-
-      console.log({ prix: prix, id_panier: listeArticles[0].id_panier });
 
       const commande = {
          id: uuidv4(),
          id_utilisateur: utilisateurData[0][0].id_utilisateur,
-         id_commande: listeArticles[0].id_panier,
-         prix_commande: prix
+         id_commande: panier.id,
+         prix_commande: panier.prix_total
       };
 
-      const result = await commandeDAO.create(connexion, commande);
+      const result = await COMMANDE_DAO.create(connexion, commande);
 
       console.log(result)
 

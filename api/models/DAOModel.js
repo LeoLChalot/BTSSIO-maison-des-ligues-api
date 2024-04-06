@@ -29,9 +29,7 @@ class DAOModel {
         SELECT * 
         FROM ${this.table} 
         `;
-         const rows = await connexion.query(query);
-         // console.log(rows);
-         return rows;
+        return await connexion.query(query);
       } catch (error) {
          console.error('Error fetching articles:', error);
          throw error;
@@ -68,16 +66,10 @@ class DAOModel {
                   query += `AND ${columns[i]} = ? `;
                }
             }
-
          } else {
             query = `SELECT * FROM ${this.table} WHERE ${columns[0]} = ?`;
          }
-
-         console.log(query)
-
-         const result = await connexion.query(query, values);
-         console.log({"result": result});
-         return result;
+         return await connexion.query(query, values);
       } catch (error) {
          console.error('Error deleting article:', error);
          throw error;

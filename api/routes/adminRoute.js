@@ -27,31 +27,10 @@ const adminController = require('../controller/adminController');
 
 // router.use(cookieAdmin)
 router.use(bearerAdmin)
-
 router.post('/categorie/new', adminController.createCategory);
-
 router.delete('/categorie/:id', adminController.deleteCategory);
-
-router.post(
-   '/article',
-   upload.single('photo'),
-   adminController.createArticle,
-   async (req, res) => {
-      return res.status(200).json({ success: true });
-   }
-);
-
-router.put(
-   '/article',
-   upload.single('photo'),
-   adminController.updateArticle,
-   async (req, res) => {
-      return res.status(200).json({ success: true });
-   }
-);
-
+router.post('/article', upload.single('photo'), adminController.createArticle);
+router.put('/article', upload.single('photo'), adminController.updateArticle);
 router.delete('/article/:id', adminController.deleteArticle);
-
-
 
 module.exports = router;
