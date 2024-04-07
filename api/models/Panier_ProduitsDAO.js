@@ -21,11 +21,11 @@ class Panier_ProduitsDAO extends DAOModel {
             a.prix AS prix_unite
          FROM panier_produits pp
          JOIN articles a 
-         ON pp.id_article = a.id_article
+         ON pp.id_article = a.id
          WHERE pp.id_panier = ?
          GROUP BY pp.id_panier, pp.id_article, a.prix
          ORDER BY pp.id_article ASC`;
-         console.log({"query": query, "id": id_panier});
+         // console.log({"query": query, "id": id_panier});
          const rows = await connexion.query(query, [id_panier]);
          console.log(rows);
          return rows;

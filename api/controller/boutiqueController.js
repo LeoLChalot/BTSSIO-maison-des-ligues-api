@@ -2,14 +2,16 @@ const ConnexionDAO = require('../models/ConnexionDAO');
 const CategorieDAO = require('../models/CategorieDAO');
 const ArticleDAO = require('../models/ArticleDAO');
 
+const CATEGORIE_DAO = new CategorieDAO();
+const ARTICLE_DAO = new ArticleDAO();
+
 const getCategoryById = async (connexion, id) => {
    try {
-      const categorieDAO = new CategorieDAO();
       const findById = {
-         id_categorie: id,
+         id: id,
       };
 
-      const result = await categorieDAO.find(connexion, findById);
+      const result = await CATEGORIE_DAO.find(connexion, findById);
 
       console.log(result);
 
@@ -36,8 +38,7 @@ exports.getAllCategories = async (req, res) => {
    let connexion;
    try {
       connexion = await ConnexionDAO.connect();
-      const categorieDAO = new CategorieDAO();
-      const result = await categorieDAO.find_all(connexion);
+      const result = await CATEGORIE_DAO.find_all(connexion);
 
       if (result[0].length === 0) return res.status(404).json({
          success: false,
@@ -45,9 +46,10 @@ exports.getAllCategories = async (req, res) => {
       });
 
       const categories = [];
+
       for (let i = 0; i < result[0].length; i++) {
          categories.push({
-            id: result[0][i].id_categorie,
+            id: result[0][i].id,
             nom: result[0][i].nom,
          });
       }
@@ -55,7 +57,7 @@ exports.getAllCategories = async (req, res) => {
       return res.status(200).json({
          success: true,
          message: 'Liste des categories',
-         infos: categories,
+         infos: { categories: categories },
       })
 
    } catch (error) {
@@ -80,25 +82,30 @@ exports.getCategoryById = async (req, res) => {
    try {
       connexion = await ConnexionDAO.connect();
       const findById = {
-         id_categorie: req.params.id,
+         id: req.params.id,
       };
-      const categorieDAO = new CategorieDAO();
-      const result = await categorieDAO.find(connexion, findById);
+
+      const result = await CATEGORIE_DAO.find(connexion, findById);
       if (result[0].length === 0) return res.status(404).json({
          success: false,
          message: 'Categorie non trouvé',
       });
 
+      console.log(result);
+
       const categorie = {
-         id: result[0][0].id_categorie,
+         id: result[0][0].id,
          nom: result[0][0].nom,
       };
 
       return res.status(200).json({
          success: true,
          message: "Informations sur la catégorie",
-         infos: categorie,
+         infos: {
+            categorie: categorie,
+         },
       });
+
    } catch (error) {
       console.error('Error connecting shop:', error);
       throw error;
@@ -123,8 +130,7 @@ exports.getCategoryByName = async (req, res) => {
       const findByNom = {
          nom: req.query.nom,
       };
-      const categorieDAO = new CategorieDAO();
-      const result = await categorieDAO.find(connexion, findByNom);
+      const result = await CATEGORIE_DAO.find(connexion, findByNom);
       console.log(result);
       if (result[0].length === 0) return res.status(404).json({
          success: false,
@@ -132,14 +138,14 @@ exports.getCategoryByName = async (req, res) => {
       })
 
       const categorie = {
-         id: result[0][0].id_categorie,
+         id: result[0][0].id,
          nom: result[0][0].nom,
       };
 
       return res.status(200).json({
          success: true,
          message: "Informations sur la catégorie",
-         infos: categorie,
+         infos: { categorie: categorie },
       })
    } catch (error) {
       console.error('Error connecting shop:', error);
@@ -162,8 +168,7 @@ exports.getAllArticles = async (req, res) => {
    let connexion;
    try {
       connexion = await ConnexionDAO.connect();
-      const articleDAO = new ArticleDAO();
-      const result = await articleDAO.find_all(connexion);
+      const result = await ARTICLE_DAO.find_all(connexion);
 
       if (result[0].length === 0) return res.status(404).json({
          success: false,
@@ -176,7 +181,7 @@ exports.getAllArticles = async (req, res) => {
 
       for (let i = 0; i < result[0].length; i++) {
          const article = {
-            id: result[0][i].id_article,
+            id: result[0][i].id,
             nom: result[0][i].nom,
             description: result[0][i].description,
             image: result[0][i].photo,
@@ -191,13 +196,10 @@ exports.getAllArticles = async (req, res) => {
       }
       return res.status(200).json({
          success: true,
-         message:
-            articles.length > 1
-               ? 'Informations des articles'
-               : 'Informations de l\'article',
-         infos: articles,
+         message: 'Informations des articles',
+         infos:
+            { articles: articles },
       });
-
 
    } catch (error) {
       console.error('Error connecting shop:', error);
@@ -220,14 +222,16 @@ exports.getArticleById = async (req, res) => {
    let connexion;
    try {
       connexion = await ConnexionDAO.connect();
-      const articleDAO = new ArticleDAO();
+
       const findByIdArticle = {
-         id_article: req.params.id,
+         id: req.params.id,
       };
-      const result = await articleDAO.find(
+
+      const result = await ARTICLE_DAO.find(
          connexion,
          findByIdArticle
       );
+
       if (result[0].length === 0) return res.status(404).json({
          success: false,
          message: 'Article non trouvé',
@@ -236,7 +240,7 @@ exports.getArticleById = async (req, res) => {
       const categorie = await getCategoryById(connexion, result[0][0].categorie_id);
 
       const article = {
-         id: result[0][0].id_article,
+         id: result[0][0].id,
          nom: result[0][0].nom,
          description: result[0][0].description,
          image: result[0][0].photo,
@@ -251,7 +255,7 @@ exports.getArticleById = async (req, res) => {
       return res.status(200).json({
          success: true,
          message: 'Informations de l\'article',
-         infos: article,
+         infos: { article: article },
       });
 
    } catch (error) {
@@ -275,11 +279,10 @@ exports.getArticleByName = async (req, res) => {
    let connexion;
    try {
       connexion = await ConnexionDAO.connect();
-      const articleDAO = new ArticleDAO();
       const findByNom = {
          nom: req.params.nom,
       };
-      result = await articleDAO.find(connexion, findByNom);
+      result = await ARTICLE_DAO.find(connexion, findByNom);
       if (result[0].length === 0) return res.status(404).json({
          success: false,
          message: 'Article non trouvé',
@@ -288,7 +291,7 @@ exports.getArticleByName = async (req, res) => {
       const categorie = await getCategoryById(connexion, result[0][0].categorie_id);
 
       const article = {
-         id: result[0][0].id_article,
+         id: result[0][0].id,
          nom: result[0][0].nom,
          description: result[0][0].description,
          image: result[0][0].photo,
@@ -300,12 +303,12 @@ exports.getArticleByName = async (req, res) => {
          }
       };
 
-      res.status(200).json({
+      return res.status(200).json({
          success: true,
          message: 'Informations de l\'article',
-         infos: article,
+         infos: {article: article},
       });
-      return;
+
    } catch (error) {
       console.error('Error connecting shop:', error);
       throw error;
@@ -327,11 +330,11 @@ exports.getArticlesByIdCategory = async (req, res) => {
    let connexion;
    try {
       connexion = await ConnexionDAO.connect();
-      const articleDAO = new ArticleDAO();
+
       const findByIdCategorie = {
          categorie_id: req.params.id,
       };
-      const result = await articleDAO.find(
+      const result = await ARTICLE_DAO.find(
          connexion,
          findByIdCategorie
       );
@@ -346,7 +349,7 @@ exports.getArticlesByIdCategory = async (req, res) => {
 
       for (let i = 0; i < result[0].length; i++) {
          const article = {
-            id: result[0][i].id_article,
+            id: result[0][i].id,
             nom: result[0][i].nom,
             description: result[0][i].description,
             image: result[0][i].photo,
@@ -365,7 +368,7 @@ exports.getArticlesByIdCategory = async (req, res) => {
             articles.length > 1
                ? 'Informations des articles'
                : 'Informations de l\'article',
-         infos: articles,
+         infos: {articles: articles},
       });
 
    } catch (error) {

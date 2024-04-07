@@ -79,16 +79,18 @@ class DAOModel {
    /**
     * ## Ajouter un nouvel item dans la base de données.
     * ---
+    * Permet d'ajouter un nouvel item dans la table correspondante à l'objet.
+    *
     * @param {Object} connexion - L'objet de connexion.
-    * @param {Array} values - Un tableau de valeurs pour le nouvel item.
+    * @param {Object} object - L'objet contenant les colonnes et les valeurs de l'item à ajouter.
     * @return {Promise} Une promesse qui contient le résultat de la requête.
-    * ---
-    * *Exemples :*
-    * ```js
+    *
+    * Le résultat renvoyé est toujours `true` si l'insertion est réussie, et `false` si elle échoue.
+    *
+    * @example
     * const object = { id: 1, column_1: value_1, column_2: value_2 }
     * const model = new DAOModel();
     * model.create(connexion, object);
-    * ```
     */
    async create(connexion, object) {
       try {
@@ -110,31 +112,34 @@ class DAOModel {
                query += `?)`;
             }
          }
-         console.log(query, values);
 
          const result = await connexion.query(query, values);
-         console.log(result);
-         return result;
+         return true
       } catch (error) {
          console.error('Error adding article:', error);
-         throw error;
+         return false;
       }
    }
 
    /**
-    * ## Mise à jour d'une ligne dans la base de données.
+    * ## Mettre à jour une ligne dans la base de données.
     * ---
+    * Permet de mettre à jour une ou plusieurs colonnes d'une ligne
+    * correspondant à l'objet passé en paramètre.
+    *
     * @param {Object} connexion - L'objet de connexion.
-    * @param {Array} columns - Un tableau de colonnes à mettre à jour.
-    * @param {Array} values - Un tableau des valeurs à mettre à jour.
-    * @return {Promise} Une promesse qui contient le résultat de la requête.
-    * ---
-    * *Exemples :*
-    * ```js
-    * const object = { id: 1, column_3: new_value_3, column_8: new_value_8 }
+    * @param {Object} object - L'objet contenant les colonnes et les
+    * nouvelles valeurs à mettre à jour.
+    * @return {Promise} Une promesse qui contient le résultat de la
+    * requête.
+    *
+    * Le résultat renvoyé est toujours `true` si la mise à jour est réussie,
+    * et `false` si elle échoue.
+    *
+    * @example
+    * const object = { column_3: new_value_3, column_8: new_value_8, id: 1 }
     * const model = new DAOModel();
     * model.update(connexion, object);
-    * ```
     *
     */
    async update(connexion, object) {
@@ -142,32 +147,45 @@ class DAOModel {
          const columns = Object.keys(object);
          const values = Object.values(object);
 
+         console.log({columns, values});
+
          let query = `UPDATE ${this.table} SET `;
          for (let i = 0; i < columns.length - 1; i++) {
+            console.log(`${columns[i]} = ${values[i]}`);
             if (i < columns.length - 2) {
+               console.log(`[COLUMN.LENGTH - ${i}] ${columns[i]} = ${values[i]}`);
                query += `${columns[i]} = ?, `;
             } else {
-               query += `${columns[i]} = ? `;
+               console.log(`[COLUMN.LENGTH - ${i}] ${columns[i]} = ${values[i]}`);
+               query += `${columns[columns.length - 2]} = ? `;
             }
          }
-         query += `WHERE id_article = ?`;
+         console.log(`[COLUMN.LENGTH - ${columns.length - 1}] ${columns[columns.length - 1]} = ${values[columns.length - 1]}`);
+         query += `WHERE ${columns[columns.length - 1]} = ?`;
 
-         console.log(query, values);
+         console.log({ "QUERY": query, "VALUES": values });
+
          const result = await connexion.query(query, values);
-         console.log(result);
-         return result;
+         return true;
       } catch (error) {
          console.error('Error updating article:', error);
-         throw error;
+         return false;
       }
    }
+
 
    /**
     * ## Supprimer un item dans la base de données.
     *
     * @param {Object} connexion - L'objet de connexion.
-    * @param {Object} object - L'objet contenant les colonnes et valeurs à supprimer.
-    * @return {Promise} - Une promesse qui contient le résultat de la requête.
+    * @param {Object} object - L'objet contenant les colonnes et les
+    *  valeurs à supprimer.
+    * @return {Promise} Une promesse qui contient le résultat de la
+    * requête.
+    *
+    * Le résultat renvoyé est toujours `true` si la mise à jour est réussie,
+    * et `false` si elle échoue.
+    *
     * ---
     * *Exemples : Avec une seule colonne*
     * ```js
@@ -192,7 +210,6 @@ class DAOModel {
       try {
          const columns = Object.keys(object);
          const values = Object.values(object);
-         console.log(columns, values);
          let query = '';
          if (columns.length > 1 && values.length > 1) {
             query = `DELETE FROM ${this.table} WHERE `;
@@ -205,17 +222,14 @@ class DAOModel {
                   query += `AND ${columns[i]} = ? LIMIT 1`;
                }
             }
-            console.log(query, values);
          } else {
             query = `DELETE FROM ${this.table} WHERE ${columns} = ?`;
          }
-
          const result = await connexion.query(query, values);
-         console.log(result);
-         return result;
+         return true
       } catch (error) {
          console.error('Error deleting article:', error);
-         throw error;
+         return false
       }
    }
 
@@ -238,10 +252,10 @@ class DAOModel {
         `;
          const result = await connexion.query(query);
          console.log(result);
-         return result;
+         return true
       } catch (error) {
          console.error('Error deleting article:', error);
-         throw error;
+         return false
       }
    }
 }

@@ -27,10 +27,12 @@ const adminController = require('../controller/adminController');
 
 // router.use(cookieAdmin)
 router.use(bearerAdmin)
+router.get('/users/all', adminController.getAllUsers);
 router.post('/categorie/new', adminController.createCategory);
 router.delete('/categorie/:id', adminController.deleteCategory);
+router.put('/categorie/:id', adminController.updateCategory);
 router.post('/article', upload.single('photo'), adminController.createArticle);
 router.put('/article', upload.single('photo'), adminController.updateArticle);
 router.delete('/article/:id', adminController.deleteArticle);
 
-module.exports = router;
+module.exports = router

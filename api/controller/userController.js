@@ -1,6 +1,7 @@
 const ConnexionDAO = require('../models/ConnexionDAO');
 const UtilisateurDAO = require('../models/UtilisateurDAO');
 const PanierDAO = require('../models/PanierDAO');
+const Details_CommandesDAO = require('../models/Details_CommandesDAO');
 
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
@@ -8,6 +9,7 @@ const jwt = require('jsonwebtoken');
 
 const UTILISATEUR_DAO = new UtilisateurDAO();
 const PANIER_DAO = new PanierDAO();
+const DETAILS_COMMANDE_DAO = new Details_CommandesDAO();
 
 /**
  * ## Inscrire un utilisateur
@@ -42,7 +44,7 @@ exports.register = async (req, res) => {
             message: 'Ce pseudo est déjà utilisé',
          });
          const user = {
-            id_utilisateur: uuidv4(),
+            id: uuidv4(),
             prenom: prenom,
             nom: nom,
             pseudo: pseudo,
@@ -103,40 +105,44 @@ exports.login = async (req, res) => {
 
       if (utilisateur[0].length === 0) utilisateur = await UTILISATEUR_DAO.find(connexion, findWithPseudo);
 
-      // ! Envoyer une erreur si le couple login/mdp ne correspond pas
-      if (utilisateur[0].length === 0) return res.status(205).json({
+      // ! Envoyer une erreur si le couple login
+      if (utilisateur[0].length === 0) return res.status(404).json({
          success: false,
-         message: "L'email et le mot de passe ne correspondent pas",
+         message: "Le login est incorrect",
       })
 
       utilisateur = {
-         id_utilisateur: utilisateur[0][0].id_utilisateur,
+         id: utilisateur[0][0].id,
          pseudo: utilisateur[0][0].pseudo,
          email: utilisateur[0][0].email,
          isAdmin: utilisateur[0][0].is_admin,
          hash: utilisateur[0][0].mot_de_passe,
       };
 
+      console.log({ "UTILISATEUR": utilisateur })
+
       // ? Vérifier le mot de passe
-      if (!bcrypt.compareSync(mot_de_passe, utilisateur['hash'])) return res.status(205).json({
+      if (!bcrypt.compareSync(mot_de_passe, utilisateur['hash'])) return res.status(404).json({
          success: false,
          message: 'Mot de passe incorrect',
       })
 
       // ? Récupérer le panier de l'utilisateur
-      const findWithIdUtilisateur = { id_utilisateur: utilisateur['id_utilisateur'] };
+      const findWithIdUtilisateur = { id_utilisateur: utilisateur.id };
       let panier = await PANIER_DAO.find(connexion, findWithIdUtilisateur);
 
       // ? Creer un nouveau panier si aucun panier n'est trouvé
       if (panier[0].length === 0) {
          const newPanier = {
-            id_panier: uuidv4(),
-            id_utilisateur: utilisateur['id_utilisateur'],
+            id: uuidv4(),
+            id_utilisateur: utilisateur.id,
             date: currentDate,
          };
          await PANIER_DAO.create(connexion, newPanier);
          panier = await PANIER_DAO.find(connexion, findWithIdUtilisateur);
       }
+
+      console.log("PANIER: ", panier)
 
       // ? Création du token
       const jwt_token = jwt.sign(
@@ -144,7 +150,7 @@ exports.login = async (req, res) => {
             email: utilisateur.email,
             pseudo: utilisateur.pseudo,
             role: utilisateur.isAdmin ? true : false,
-            panier: panier[0][0].id_panier,
+            panier: panier[0][0].id,
          },
          process.env.SECRET_KEY,
          {
@@ -154,14 +160,15 @@ exports.login = async (req, res) => {
 
       console.log('jwt_token:', jwt_token);
 
+
       return res.status(200).json({
          success: true,
          message: 'Utilisateur connecté',
-         isAdmin: utilisateur.isAdmin ? true : false,
          infos: {
             utilisateur: {
+               isAdmin: utilisateur.isAdmin ? true : false,
                pseudo: utilisateur.pseudo,
-               panier: panier[0][0].id_panier,
+               panier: panier[0][0].id,
                jwt_token: jwt_token,
             },
          },
@@ -177,6 +184,13 @@ exports.login = async (req, res) => {
    }
 };
 
+/**
+ * Function to get all users asynchronously.
+ *
+ * @param {Object} req - the request object
+ * @param {Object} res - the response object
+ * @return {Promise<void>} returns a Promise that resolves when all users are fetched
+ */
 exports.getAllUsers = async (req, res) => {
    let connexion;
    try {
@@ -196,7 +210,14 @@ exports.getAllUsers = async (req, res) => {
 };
 
 
-exports.getUserFromEmail = async (req, res) => {
+/**
+ * Get user details based on the provided email address.
+ *
+ * @param {Object} req - the request object
+ * @param {Object} res - the response object
+ * @return {Promise} JSON response with user details or error message
+ */
+exports.getUserWithEmail = async (req, res) => {
    let connexion;
    try {
       connexion = await ConnexionDAO.connect();
@@ -227,6 +248,13 @@ exports.getUserFromEmail = async (req, res) => {
 };
 
 
+/**
+ * Delete a user with the provided pseudo.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @return {Object} JSON response indicating success or failure of user deletion.
+ */
 exports.deleteUserWithPseudo = async (req, res) => {
    let connexion;
    try {
@@ -258,3 +286,139 @@ exports.deleteUserWithPseudo = async (req, res) => {
 };
 
 
+exports.updateUserWithId = async (req, res) => {
+   let connexion;
+   try {
+      connexion = await ConnexionDAO.connect();
+
+      const id = req.params.id
+      const findWithid = { id: id };
+      console.log({ "REQ.BODY": req.body, "ID": id });
+      const userData = await UTILISATEUR_DAO.find(connexion, findWithid);
+
+      if (userData[0].length === 0) return res.status(404).json({
+         success: false,
+         message: "Cet utilisateur n'existe pas",
+      });
+
+      // ? Vérifier le mot de passe
+      if (!bcrypt.compareSync(req.body.mot_de_passe, userData[0][0].mot_de_passe)) return res.status(404).json({
+         success: false,
+         message: 'Mot de passe incorrect',
+      })
+
+
+      const old_email = userData[0][0].email
+      const new_email = req.body.email ? req.body.email : userData[0][0].email
+
+      const findWithMail = { email: new_email };
+
+      const existMail = await UTILISATEUR_DAO.find(connexion, findWithMail);
+
+      if (existMail[0].length !== 0) return res.status(404).json({
+         success: false,
+         message: 'Cet email est déjà utilisé',
+      })
+
+      const newUserData = {
+         prenom: req.body.prenom ? req.body.prenom : userData[0][0].prenom,
+         nom: req.body.nom ? req.body.nom : userData[0][0].nom,
+         pseudo: req.body.pseudo ? req.body.pseudo : userData[0][0].pseudo,
+         email: new_email,
+         id: id
+      };
+
+      console.log({ "newUserData": newUserData });
+
+      const filteredUserData = Object.fromEntries(
+         Object.entries(newUserData).filter(
+            ([key, value]) => value !== null
+         )
+      );
+
+      const result = await UTILISATEUR_DAO.update(connexion, filteredUserData);
+
+      return (!result) 
+      ? res.status(404).json({
+         success: false,
+         message: "[User.update] Une erreur est survenue au moment de la mise à jour des informations",
+      })
+      : res.status(200).json({
+         success: true,
+         message: "Informations mises à jour",
+      })
+
+   } catch (error) {
+      console.error('Error connecting user:', error);
+      throw error;
+   } finally {
+      if (connexion) {
+         ConnexionDAO.disconnect(connexion);
+      }
+   }
+}
+
+exports.updatePasswordWithId = async (req, res) => {
+   let connexion;
+   try {
+      connexion = await ConnexionDAO.connect();
+
+      const id = req.params.id
+
+      const { current_password, new_password } = req.body
+
+      if (!current_password || !new_password)
+         return res.status(404).json({
+            success: false,
+            message: "Veuillez renseigner tous les champs",
+         });
+
+      const findWithid = { id: id };
+
+      console.log({ "REQ.BODY": req.body, "ID": id });
+
+      const userData = await UTILISATEUR_DAO.find(connexion, findWithid);
+
+      if (userData[0].length === 0) return res.status(404).json({
+         success: false,
+         message: "Cet utilisateur n'existe pas",
+      });
+
+      // ? Vérifier le mot de passe
+      if (!bcrypt.compareSync(req.body.current_password, userData[0][0].mot_de_passe)) return res.status(404).json({
+         success: false,
+         message: 'Mot de passe incorrect',
+      })
+
+      const newUserData = {
+         mot_de_passe: bcrypt.hashSync(new_password, 10),
+         id: id
+      };
+
+      const filteredUserData = Object.fromEntries(
+         Object.entries(newUserData).filter(
+            ([key, value]) => value !== null
+         )
+      );
+
+      const result = await UTILISATEUR_DAO.update(connexion, filteredUserData);
+
+      if (!result) return res.status(404).json({
+         success: false,
+         message: "Cet utilisateur n'existe pas",
+      });
+
+      return res.status(200).json({
+         success: true,
+         message: "Mot de passe mis à jour",
+      });
+
+   } catch (error) {
+      console.error('Error connecting user:', error);
+      throw error;
+   } finally {
+      if (connexion) {
+         ConnexionDAO.disconnect(connexion);
+      }
+   }
+}

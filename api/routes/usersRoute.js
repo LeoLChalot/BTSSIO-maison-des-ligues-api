@@ -5,7 +5,8 @@ const cookieParser = require('cookie-parser');
 
 const userController = require('../controller/userController');
 
-router.get('/all', userController.getAllUsers);
+router.put('/update/profil/:id', userController.updateUserWithId);
+router.put('/update/password/:id', userController.updatePasswordWithId);
 router.post('/inscription', userController.register);
 router.post('/connexion', cookieParser(), userController.login);
 router.delete('/delete/:pseudo', userController.deleteUserWithPseudo);
