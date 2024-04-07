@@ -7,9 +7,7 @@ const CommandeDAO = require('../models/CommandeDAO');
 const Panier_ProduitsDAO = require('../models/Panier_ProduitsDAO');
 const CategorieDAO = require('../models/CategorieDAO');
 const Details_CommandesDAO = require('../models/Details_CommandesDAO');
-
 const { v4: uuidv4 } = require('uuid');
-
 const UTILISATEUR_DAO = new UtilisateurDAO();
 const PANIER_DAO = new PanierDAO();
 const PANIER_PRODUITS_DAO = new Panier_ProduitsDAO();

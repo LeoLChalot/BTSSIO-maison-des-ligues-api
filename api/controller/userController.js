@@ -2,11 +2,9 @@ const ConnexionDAO = require('../models/ConnexionDAO');
 const UtilisateurDAO = require('../models/UtilisateurDAO');
 const PanierDAO = require('../models/PanierDAO');
 const Details_CommandesDAO = require('../models/Details_CommandesDAO');
-
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
-
 const UTILISATEUR_DAO = new UtilisateurDAO();
 const PANIER_DAO = new PanierDAO();
 const DETAILS_COMMANDE_DAO = new Details_CommandesDAO();
@@ -286,6 +284,13 @@ exports.deleteUserWithPseudo = async (req, res) => {
 };
 
 
+/**
+ * Update a user with the provided ID using the information in the request body.
+ *
+ * @param {Object} req - The request object containing user information.
+ * @param {Object} res - The response object to send back the result.
+ * @return {Object} The updated user information or an error message.
+ */
 exports.updateUserWithId = async (req, res) => {
    let connexion;
    try {
@@ -338,15 +343,15 @@ exports.updateUserWithId = async (req, res) => {
 
       const result = await UTILISATEUR_DAO.update(connexion, filteredUserData);
 
-      return (!result) 
-      ? res.status(404).json({
-         success: false,
-         message: "[User.update] Une erreur est survenue au moment de la mise à jour des informations",
-      })
-      : res.status(200).json({
-         success: true,
-         message: "Informations mises à jour",
-      })
+      return (!result)
+         ? res.status(404).json({
+            success: false,
+            message: "[User.update] Une erreur est survenue au moment de la mise à jour des informations",
+         })
+         : res.status(200).json({
+            success: true,
+            message: "Informations mises à jour",
+         })
 
    } catch (error) {
       console.error('Error connecting user:', error);
@@ -358,6 +363,13 @@ exports.updateUserWithId = async (req, res) => {
    }
 }
 
+/**
+ * Update user password with the provided ID.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @return {Promise} The updated user information.
+ */
 exports.updatePasswordWithId = async (req, res) => {
    let connexion;
    try {

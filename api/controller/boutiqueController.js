@@ -1,7 +1,6 @@
 const ConnexionDAO = require('../models/ConnexionDAO');
 const CategorieDAO = require('../models/CategorieDAO');
 const ArticleDAO = require('../models/ArticleDAO');
-
 const CATEGORIE_DAO = new CategorieDAO();
 const ARTICLE_DAO = new ArticleDAO();
 
@@ -306,7 +305,7 @@ exports.getArticleByName = async (req, res) => {
       return res.status(200).json({
          success: true,
          message: 'Informations de l\'article',
-         infos: {article: article},
+         infos: { article: article },
       });
 
    } catch (error) {
@@ -368,7 +367,7 @@ exports.getArticlesByIdCategory = async (req, res) => {
             articles.length > 1
                ? 'Informations des articles'
                : 'Informations de l\'article',
-         infos: {articles: articles},
+         infos: { articles: articles },
       });
 
    } catch (error) {

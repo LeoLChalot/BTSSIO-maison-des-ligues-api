@@ -2,9 +2,7 @@ const ConnexionDAO = require('../models/ConnexionDAO');
 const UtilisateurDAO = require('../models/UtilisateurDAO');
 const CategorieDAO = require('../models/CategorieDAO');
 const ArticleDAO = require('../models/ArticleDAO');
-
 const { v4: uuidv4 } = require('uuid');
-
 const UTILISATEUR_DAO = new UtilisateurDAO();
 const CATEGORIE_DAO = new CategorieDAO();
 const ARTICLE_DAO = new ArticleDAO();
