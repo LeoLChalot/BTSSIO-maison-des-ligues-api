@@ -240,12 +240,16 @@ exports.updateCategory = async (req, res) => {
 
 exports.createArticle = async (req, res) => {
    try {
+
+      console.log("PRESQUE");
       const connexion = await ConnexionDAO.connect();
-      const articleDAO = new ArticleDAO();
 
       const { nom, description, prix, quantite, categorie_id } =
          req.body;
       const { file } = req;
+
+      console.log(req.body);
+      console.log(req.file)
 
       // ? Vérifie si l'article existe déjà
       const article = {
@@ -304,9 +308,16 @@ exports.updateArticle = async (req, res) => {
       const connexion = await ConnexionDAO.connect();
       const articleDAO = new ArticleDAO();
 
+      console.log(req)
+
+      let path = req.file ? (req.file.path) : null
+
+      if (path) path = path.replace(".undefined", ".jpg");
+      
+
       const article = {
          nom: req.body.nom || null,
-         photo: req.file ? req.file.path : null,
+         photo: req.file ? (req.file.path) : null,
          description: req.body.description || null,
          prix: req.body.prix || null,
          quantite: req.body.quantite || null,

@@ -3,6 +3,9 @@ const cors = require('cors');
 const path = require('path');
 const app = express();
 const PORT = 3000;
+// const IP_HOME = "192.168.1.30";
+// const IP_ECOLE = "192.168.56.1"
+// const IP_ECOLE ="10.74.3.0:3000"
 const cookieParser = require('cookie-parser');
 
 
@@ -19,25 +22,25 @@ app.use(
       sameSite: 'None',
       secure: false,
    })
- );
+);
 
 
 
 const whiteList = [
-	'http://localhost:3000',
-	'http://127.0.0.1:5173',
-	'http://192.168.58.199:5173',
-	'http://192.168.1.35:3000',
-	'http://localhost:52905/',
-	'http://localhost:55605/',
-	'http://localhost:56976/',
-	'http://127.0.0.1:56976/',
-	'http://127.0.0.1:55605',
-	'http://192.168.1.34:5173',
-	'http://localhost:5173',
-	'http://localhost:50433',
-	'http://localhost:45820',
-	'http://127.0.0.1:43336'];
+   'http://localhost:3000',
+   'http://127.0.0.1:5173',
+   'http://192.168.58.199:5173',
+   'http://192.168.1.35:3000',
+   'http://localhost:52905/',
+   'http://localhost:55605/',
+   'http://localhost:56976/',
+   'http://127.0.0.1:56976/',
+   'http://127.0.0.1:55605',
+   'http://192.168.1.34:5173',
+   'http://localhost:5173',
+   'http://localhost:50433',
+   'http://localhost:45820',
+   'http://127.0.0.1:43336'];
 
 
 const corsOptions = {
@@ -53,12 +56,12 @@ const corsOptions = {
 };
 
 app.use(express.json());
-// app.use(cors());
-app.use(cors(corsOptions));
+app.use(cors());
+// app.use(cors(corsOptions));
 
 /** app.get("/", (req, res) => {
-	const root = __dirname;
-	res.sendFile(root + "/coucou.html");
+   const root = __dirname;
+   res.sendFile(root + "/coucou.html");
 })
 */
 // ? Router inscription / connexion
@@ -98,6 +101,6 @@ app.use((err, req, res, next) => {
    res.status(500).json({ message: 'Internal server error' });
 });
 */
-module.exports = app.listen(PORT, () => {
-   console.log(`Listen on port ${PORT}`);
+module.exports = app.listen(PORT,  () => {
+   console.log(`Listen on :${PORT}`);
 });
