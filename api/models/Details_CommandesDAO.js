@@ -14,7 +14,7 @@ class details_commandesDAO extends DAOModel {
             a.prix AS prix_unite
          FROM panier_produits dc
          JOIN articles a 
-         ON dc.id_article = a.id_article
+         ON dc.id_article = a.id
          WHERE dc.id_panier = ?
          GROUP BY dc.id_panier, dc.id_article, a.prix
          ORDER BY dc.id_article ASC`;

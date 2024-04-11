@@ -5,25 +5,10 @@ const cookieParser = require('cookie-parser');
 
 const userController = require('../controller/userController');
 
-router.get('/', userController.getAllUsers, async (req, res) => {
-   res.status(200).json({ success: true });
-});
-
-router.post(
-   '/inscription',
-   userController.register,
-   async (req, res) => {
-      res.status(200).json({ success: true });
-   }
-);
-
-router.post(
-   '/connexion',
-   cookieParser(),
-   userController.login,
-   async (req, res) => {
-      res.status(200).json({ success: true });
-   }
-);
+router.put('/update/profil/:id', userController.updateUserWithId);
+router.put('/update/password/:id', userController.updatePasswordWithId);
+router.post('/inscription', userController.register);
+router.post('/connexion', cookieParser(), userController.login);
+router.delete('/delete/:pseudo', userController.deleteUserWithPseudo);
 
 module.exports = router;
