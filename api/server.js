@@ -101,6 +101,6 @@ app.use((err, req, res, next) => {
    res.status(500).json({ message: 'Internal server error' });
 });
 */
-module.exports = app.listen(PORT, IP_ECOLE () => {
+module.exports = app.listen(PORT, () => {
    console.log(`Listen on ${IP_ECOLE}:${PORT}`);
 });
