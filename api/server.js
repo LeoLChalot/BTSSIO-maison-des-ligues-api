@@ -31,6 +31,8 @@ const whiteList = [
 	'http://192.168.1.34:5173',
 	'http://localhost:5173',
 	'http://localhost:50433',
+	'http://localhost:55605',
+	'http://127.0.0.1:55605',
 	'http://localhost:45820'];
 
 
