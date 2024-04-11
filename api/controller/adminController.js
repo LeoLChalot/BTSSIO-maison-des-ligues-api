@@ -313,7 +313,7 @@ exports.updateArticle = async (req, res) => {
       let path = req.file ? (req.file.path) : null
 
       if (path) path = path.replace(".undefined", ".jpg");
-      
+
 
       const article = {
          nom: req.body.nom || null,
@@ -425,6 +425,9 @@ exports.getAllUsers = async (req, res) => {
       connexion = await ConnexionDAO.connect();
       const users = await UTILISATEUR_DAO.find_all(connexion);
 
+
+
+
       if (!users[0])
          return res.status(404).json({
             success: false,
@@ -434,7 +437,7 @@ exports.getAllUsers = async (req, res) => {
       return res.status(200).json({
          success: true,
          message: 'Liste des utilisateurs',
-         users: users[0]
+         infos: { users: users[0] }
       });
 
    } catch (error) {
