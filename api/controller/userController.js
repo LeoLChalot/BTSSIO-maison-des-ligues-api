@@ -14,10 +14,10 @@ exports.getUser = async (req, res) => {
 	let connexion;
 	try {
 		connexion = await ConnexionDAO.connect();
-		const { pseudo } = req.params.pseudo;
-
+		const { pseudo } = req.params;
+		console.log(pseudo);
 		const findWithPseudo = {pseudo: pseudo};
-		const user = await UTILISATEUR_DAO.find(connexion, findwithPseudo);
+		const user = await UTILISATEUR_DAO.find(connexion, findWithPseudo);
 
 		const utilisateur = {
 			"id": user[0][0].id,
@@ -25,24 +25,24 @@ exports.getUser = async (req, res) => {
 			"nom": user[0][0].nom,
 			"pseudo": user[0][0].pseudo,
 			"email":user[0][0].email,
+			"isAdmin": user[0][0].is_admin
 		 }
 
 		return res.status(200).json({
 		"success": true,
-		"message": "Informations de l'utilisateur,
+		"message": "Informations de l'utilisateur",
 		"infos": {
 			"utilisateur": utilisateur
 		}
 		});
 	}catch(err){
-		return res.status(404}.json({
+		return res.status(404).json({
 			"success": false,
 			"message": err
 		});
 	}finally{
 		if (connexion) {
          		ConnexionDAO.disconnect(connexion);
-      		
 		}
 	}
 }
@@ -339,7 +339,7 @@ exports.updateUserWithId = async (req, res) => {
       const findWithid = { id: id };
       console.log({ "REQ.BODY": req.body, "ID": id });
       const userData = await UTILISATEUR_DAO.find(connexion, findWithid);
-
+	console.log(userData);
       if (userData[0].length === 0) return res.status(404).json({
          success: false,
          message: "Cet utilisateur n'existe pas",
