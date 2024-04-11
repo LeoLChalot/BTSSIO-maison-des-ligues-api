@@ -4,7 +4,7 @@ const path = require('path');
 const app = express();
 const PORT = 3000;
 // const IP_HOME = "192.168.1.30";
-// const IP_ECOLE = "192.168.56.1"
+const IP_ECOLE = "192.168.1.35"
 // const IP_ECOLE ="10.74.3.0:3000"
 const cookieParser = require('cookie-parser');
 
@@ -27,18 +27,6 @@ app.use(
 
 
 const whiteList = [
-<<<<<<< HEAD
-	'http://localhost:3000',
-	'http://127.0.0.1:5173',
-	'http://192.168.58.199:5173',
-	'http://192.168.1.35:3000',
-	'http://192.168.1.34:5173',
-	'http://localhost:5173',
-	'http://localhost:50433',
-	'http://localhost:55605',
-	'http://127.0.0.1:55605',
-	'http://localhost:45820'];
-=======
    'http://localhost:3000',
    'http://127.0.0.1:5173',
    'http://192.168.58.199:5173',
@@ -53,7 +41,6 @@ const whiteList = [
    'http://localhost:50433',
    'http://localhost:45820',
    'http://127.0.0.1:43336'];
->>>>>>> 80f4c39bc33553a144a5414b2b8ddc3b018363d9
 
 
 const corsOptions = {
@@ -114,6 +101,6 @@ app.use((err, req, res, next) => {
    res.status(500).json({ message: 'Internal server error' });
 });
 */
-module.exports = app.listen(PORT,  () => {
-   console.log(`Listen on :${PORT}`);
+module.exports = app.listen(PORT, IP_ECOLE () => {
+   console.log(`Listen on ${IP_ECOLE}:${PORT}`);
 });
