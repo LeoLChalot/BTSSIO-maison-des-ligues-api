@@ -45,7 +45,7 @@ router.post('/article/new', upload.single('photo'), adminController.createArticl
 // ? Update role
 router.put('/user/role/:id', adminController.updatePrivilege);
 router.put('/categorie/:id', adminController.updateCategory);
-router.put('/article', upload.single('photo'), adminController.updateArticle);
+router.put('/article/:id', upload.single('photo'), adminController.updateArticle);
 
 
 // ? Delete

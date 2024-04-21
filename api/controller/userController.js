@@ -151,7 +151,7 @@ exports.login = async (req, res) => {
          message: "Le login est incorrect",
       })
 
-      utilisateur = {
+      loggedUser = {
          id: utilisateur[0][0].id,
          pseudo: utilisateur[0][0].pseudo,
          email: utilisateur[0][0].email,
@@ -159,23 +159,23 @@ exports.login = async (req, res) => {
          hash: utilisateur[0][0].mot_de_passe,
       };
 
-      console.log({ "UTILISATEUR": utilisateur })
+      console.log({ "UTILISATEUR": loggedUser })
 
       // ? Vérifier le mot de passe
-      if (!bcrypt.compareSync(mot_de_passe, utilisateur['hash'])) return res.status(404).json({
+      if (!bcrypt.compareSync(mot_de_passe, loggedUser.hash)) return res.status(404).json({
          success: false,
          message: 'Mot de passe incorrect',
       })
 
       // ? Récupérer le panier de l'utilisateur
-      const findWithIdUtilisateur = { id_utilisateur: utilisateur.id };
+      const findWithIdUtilisateur = { id_utilisateur: loggedUser.id };
       let panier = await PANIER_DAO.find(connexion, findWithIdUtilisateur);
 
       // ? Creer un nouveau panier si aucun panier n'est trouvé
       if (panier[0].length === 0) {
          const newPanier = {
             id: uuidv4(),
-            id_utilisateur: utilisateur.id,
+            id_utilisateur: loggedUser.id,
             date: currentDate,
          };
          await PANIER_DAO.create(connexion, newPanier);
@@ -187,9 +187,9 @@ exports.login = async (req, res) => {
       // ? Création du token
       const jwt_token = jwt.sign(
          {
-            email: utilisateur.email,
-            pseudo: utilisateur.pseudo,
-            role: utilisateur.isAdmin ? true : false,
+            email: loggedUser.email,
+            pseudo: loggedUser.pseudo,
+            role: loggedUser.isAdmin ? true : false,
             panier: panier[0][0].id,
          },
          process.env.SECRET_KEY,
@@ -206,8 +206,8 @@ exports.login = async (req, res) => {
          message: 'Utilisateur connecté',
          infos: {
             utilisateur: {
-               isAdmin: utilisateur.isAdmin ? true : false,
-               pseudo: utilisateur.pseudo,
+               isAdmin: loggedUser.isAdmin,
+               pseudo: loggedUser.pseudo,
                panier: panier[0][0].id,
                jwt_token: jwt_token,
             },

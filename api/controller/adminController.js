@@ -10,7 +10,7 @@ const CATEGORIE_DAO = new CategorieDAO();
 const ARTICLE_DAO = new ArticleDAO();
 const COMMANDE_DAO = new CommandeDAO();
 const DETAILS_COMMANDE_DAO = new Details_CommandesDAO();
-
+const moment = require('moment');
 
 /**
  * Retourne un utilisateur par son login.
@@ -312,6 +312,8 @@ exports.updateArticle = async (req, res) => {
       const connexion = await ConnexionDAO.connect();
       const articleDAO = new ArticleDAO();
 
+      const id = req.params.id;
+
       console.log(req)
 
       let path = req.file ? (req.file.path) : null
@@ -326,7 +328,7 @@ exports.updateArticle = async (req, res) => {
          prix: req.body.prix || null,
          quantite: req.body.quantite || null,
          categorie_id: req.body.categorie_id || null,
-         id: req.body.id,
+         id: id,
       };
 
       const filteredArticleData = Object.fromEntries(
@@ -424,6 +426,7 @@ exports.deleteArticle = async (req, res) => {
  * @return {Object} JSON response with success status and either the list of users or an error message
  */
 exports.getAllUsers = async (req, res) => {
+   console.log("getAllUsers")
    let connexion;
    try {
       connexion = await ConnexionDAO.connect();
@@ -450,6 +453,8 @@ exports.getAllUsers = async (req, res) => {
 
          usersList.push(user);
       }
+
+      console.log(usersList)
 
       return res.status(200).json({
          success: true,
@@ -536,6 +541,7 @@ exports.getAllCommandes = async (req, res) => {
          });
 
       let commandesList = [];
+      let current_week = new Date().getDay();
 
       for (const commandeItem of commandes[0]) {
 
@@ -560,10 +566,82 @@ exports.getAllCommandes = async (req, res) => {
          commandesList.push(commande);
       }
 
+      commandesList.sort(function (a, b) {
+         return new Date(b.date) - new Date(a.date);
+      });
+
+      function getOrdersByDateRange(startDate, endDate) {
+
+         // Filter orders based on the date range
+         const filteredOrders = commandesList.filter(order => {
+            const orderDate = new Date(order.date);
+            return orderDate >= startDate && orderDate <= endDate;
+         });
+
+         return filteredOrders;
+      }
+
+      let prev_week_commandesList = [];
+      let current_week_commandesList = [];
+
+
+      function calculatePercentageChange(commandesList) {
+         // Define week calculation function (assuming 'getWeek' is available)
+         const getWeek = (date) => {
+            const oneJan = new Date(date.getFullYear(), 0, 1);
+            return Math.ceil((((date - oneJan) / 86400000) + oneJan.getDay() + 1) / 7);
+         };
+         const current_week = getWeek(new Date())
+         // Initialize empty lists
+         let prevWeekOrders = [];
+         let currentWeekOrders = [];
+
+         // Iterate through orders and separate them by week
+         for (const commande of commandesList) {
+            const orderDate = new Date(commande.date);
+            const weekNumber = getWeek(orderDate);
+
+
+            console.log(weekNumber)
+            console.log(commande)
+
+            if (weekNumber === current_week) {
+               currentWeekOrders.push(commande);
+            } else if (weekNumber === current_week - 1) {
+               prevWeekOrders.push(commande);
+            }
+         }
+
+         // Calculate percentage change
+         const prevWeekCount = prevWeekOrders.length;
+         const currentWeekCount = currentWeekOrders.length;
+         const percentageChange = ((currentWeekCount - prevWeekCount) / prevWeekCount) * 100;
+
+         console.log({ "percentageChange": percentageChange })
+         console.log({ "prevWeekCount": prevWeekCount })
+         console.log({ "currentWeekCount": currentWeekCount })
+
+         const statistics = {
+            totalCommandes: commandesList.length,
+            nombreCommandesSemainePrecedente: prevWeekCount,
+            nombreCommandesSemaineActuelle: currentWeekCount,
+            pourcentage: parseInt(percentageChange.toFixed(0)),
+         }
+
+         return statistics;
+      }
+
+      const statistiques = calculatePercentageChange(commandesList)
+
+
+
       return res.status(200).json({
          success: true,
          message: 'Liste des commandes',
-         infos: { commandes: commandesList }
+         infos: {
+            statistiques,
+            commandes: commandesList
+         }
       });
    } catch (error) {
       console.error('Error connecting user:', error);
@@ -644,6 +722,8 @@ exports.getCommandeById = async (req, res) => {
             "quantite": row.quantite,
             "prix": articleData[0][0].prix,
          }
+
+
          detailCommande.push(article)
       }
       return res.status(200).json({

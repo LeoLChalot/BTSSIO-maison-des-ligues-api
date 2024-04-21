@@ -202,15 +202,27 @@ exports.getAllArticles = async (req, res) => {
          prixTotal += article.prix * article.quantite;
          articles.push(article);
       }
+
+      const categories = {};
+      for (const data of result[0]) {
+         const categorieNom = (await getCategoryById(connexion, data.categorie_id)).nom;
+         categories[categorieNom] = categories[categorieNom] ? categories[categorieNom] + 1 : 1;
+      }
+
+
+
+
       return res.status(200).json({
          success: true,
          message: 'Informations des articles',
          infos: {
+            statistiques: {
+               categories: categories,
+               nombreArticles: nombreArticles,
+               quantiteTotal: quantiteTotal,
+               prixTotal: prixTotal.toFixed(2),
+            },
             articles: articles,
-            quantiteTotal: quantiteTotal,
-            prixTotal: prixTotal,
-
-            nombreArticles: nombreArticles
          },
       });
 
