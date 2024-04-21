@@ -124,7 +124,7 @@ exports.getCartContent = async (req, res) => {
 
          console.log({ "FETCH_ARTICLE": fetchArticle })
 
-         
+
 
          const categorie = await getCategoryById(connexion, fetchArticle[0][0].categorie_id);
 
@@ -466,7 +466,7 @@ exports.validateCart = async (req, res) => {
          findPanierWithIdUtilisateur
       );
 
-      console.log({"panierData": panierData[0]});
+      console.log({ "panierData": panierData[0] });
 
       if (panierData[0].length === 0)
          return res.status(404).json({
@@ -481,14 +481,14 @@ exports.validateCart = async (req, res) => {
       );
 
 
-      console.log({"articlesData": articlesData[0]});
+      console.log({ "articlesData": articlesData[0] });
 
 
       const listeArticles = articlesData[0];
 
       for (const article of listeArticles) {
 
-         console.log({"listeArticles": article});
+         console.log({ "listeArticles": article });
 
          const panierId = article.id_panier;
          const articleId = article.id_article;
@@ -633,3 +633,48 @@ exports.getArticleStandby = async (req, res) => {
       ConnexionDAO.disconnect();
    }
 };
+
+
+exports.deleteCart = async (req, res) => {
+   const { id_panier } = req.params;
+   if (!id_panier) {
+      return res.status(400).json({
+         success: false,
+         message: 'Identifiant du panier requis',
+      });
+   }
+   let connexion;
+   try {
+      connexion = await ConnexionDAO.connect();
+      console.log({ "id_panier": id_panier });
+
+      const findWithIdPanier = {
+         id: id_panier,
+      };
+
+      const result = await PANIER_DAO.delete(connexion, findWithIdPanier);
+
+      console.log({ "result": result });
+
+      if (!result) {
+         return res.status(500).json({
+            success: false,
+            message: 'Une erreur est survenue',
+         });
+      }
+
+      res.status(200).json({
+         success: true,
+         message: 'Panier supprimé',
+      })
+
+   } catch (error) {
+      console.error('Error connecting to database:', error);
+      res.status(500).send('Internal Server Error');
+   } finally {
+      ConnexionDAO.disconnect();
+   }
+
+
+
+}

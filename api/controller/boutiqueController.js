@@ -56,7 +56,10 @@ exports.getAllCategories = async (req, res) => {
       return res.status(200).json({
          success: true,
          message: 'Liste des categories',
-         infos: { categories: categories },
+         infos: {
+            nombreCategories: categories.length,
+            categories: categories
+         },
       })
 
    } catch (error) {
@@ -177,27 +180,38 @@ exports.getAllArticles = async (req, res) => {
       const categorie = await getCategoryById(connexion, result[0][0].categorie_id);
 
       let articles = [];
+      let nombreArticles = 0;
+      let quantiteTotal = 0;
+      let prixTotal = 0;
 
-      for (let i = 0; i < result[0].length; i++) {
+      for (const data of result[0]) {
          const article = {
-            id: result[0][i].id,
-            nom: result[0][i].nom,
-            description: result[0][i].description,
-            image: result[0][i].photo,
-            prix: result[0][i].prix,
-            quantite: result[0][i].quantite,
+            id: data.id,
+            nom: data.nom,
+            description: data.description,
+            image: data.photo,
+            prix: data.prix,
+            quantite: data.quantite,
             categorie: {
                id: categorie.id,
                nom: categorie.nom,
             }
          };
+         nombreArticles++;
+         quantiteTotal += article.quantite;
+         prixTotal += article.prix * article.quantite;
          articles.push(article);
       }
       return res.status(200).json({
          success: true,
          message: 'Informations des articles',
-         infos:
-            { articles: articles },
+         infos: {
+            articles: articles,
+            quantiteTotal: quantiteTotal,
+            prixTotal: prixTotal,
+
+            nombreArticles: nombreArticles
+         },
       });
 
    } catch (error) {

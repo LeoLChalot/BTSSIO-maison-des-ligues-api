@@ -11,40 +11,42 @@ const DETAILS_COMMANDE_DAO = new Details_CommandesDAO();
 
 
 exports.getUser = async (req, res) => {
-	let connexion;
-	try {
-		connexion = await ConnexionDAO.connect();
-		const { pseudo } = req.params.pseudo;
+   let connexion;
+   try {
+      connexion = await ConnexionDAO.connect();
+      const { pseudo } = req.params;
 
-		const findWithPseudo = {pseudo: pseudo};
-		const user = await UTILISATEUR_DAO.find(connexion, findwithPseudo);
+      const findWithPseudo = { pseudo: pseudo };
+      const user = await UTILISATEUR_DAO.find(connexion, findWithPseudo);
 
-		const utilisateur = {
-			"id": user[0][0].id,
-			"prenom": user[0][0].prenom,
-			"nom": user[0][0].nom,
-			"pseudo": user[0][0].pseudo,
-			"email":user[0][0].email,
-		 }
+      const utilisateur = {
+         "id": user[0][0].id,
+         "prenom": user[0][0].prenom,
+         "nom": user[0][0].nom,
+         "pseudo": user[0][0].pseudo,
+         "email": user[0][0].email,
+         "isAdmin": user[0][0].is_admin == 1 ? true : false
+      }
 
-		return res.status(200).json({
-		"success": true,
-		"message": "Informations de l'utilisateur,
-		"infos": {
-			"utilisateur": utilisateur
-		}
-		});
-	}catch(err){
-		return res.status(404}.json({
-			"success": false,
-			"message": err
-		});
-	}finally{
-		if (connexion) {
-         		ConnexionDAO.disconnect(connexion);
-      		
-		}
-	}
+      return res.status(200).json({
+         "success": true,
+         "message": "Informations de l'utilisateur",
+         "infos": {
+            "utilisateur": utilisateur
+         }
+      });
+   } catch (err) {
+      return res.status(404).json({
+         "success": false,
+         "message": err
+      });
+   } finally {
+      if (connexion) {
+         ConnexionDAO.disconnect(connexion);
+
+      }
+
+   }
 }
 
 
@@ -112,6 +114,7 @@ exports.register = async (req, res) => {
       }
    }
 };
+
 
 /**
  * ## Connexion d'un utilisateur
@@ -247,6 +250,7 @@ exports.getAllUsers = async (req, res) => {
 };
 
 
+
 /**
  * Get user details based on the provided email address.
  *
@@ -283,6 +287,7 @@ exports.getUserWithEmail = async (req, res) => {
       }
    }
 };
+
 
 
 /**
