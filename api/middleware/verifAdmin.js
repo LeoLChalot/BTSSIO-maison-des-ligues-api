@@ -40,6 +40,7 @@ const bearerAdmin = (req, res, next) => {
   const authHeader = req.headers.authorization;
   // On récupère la partie du header qui nous intéresse, c'est à dire le token
   const token = authHeader.split(" ")[1];
+	console.log(token);
 
   try {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);

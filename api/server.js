@@ -27,23 +27,8 @@ app.use(
 const whiteList = [
    	'http://localhost:3000',
    	'http://127.0.0.1:5173',
-   	'http://192.168.58.199:5173',
-   	'http://192.168.1.35:3000',
-   	'http://localhost:52905/',
-   	'http://localhost:55605/',
-   	'http://localhost:56976/',
-   	'http://127.0.0.1:56976/',
-	'http://192.168.1.34:5173',
-   	'http://127.0.0.1:55605',
    	'http://192.168.1.34:5173',
-   	'http://localhost:5173',
-   	'http://localhost:50433',
-   	'http://localhost:45820',
-   	'http://127.0.0.1:43336'];
-   'http://127.0.0.1:5173',
-   'http://192.168.1.30:5173',
-   'http://192.168.58.199:5173',
-   'http://192.168.1.34:5173',
+   	'http://192.168.1.35:3000',
 ];
 
 
@@ -61,8 +46,8 @@ const corsOptions = {
 };
 
 app.use(express.json());
-app.use(cors());
-// app.use(cors(corsOptions));
+// app.use(cors());
+app.use(cors(corsOptions));
 
 
 app.get('/', (req, res) => {
@@ -70,7 +55,7 @@ app.get('/', (req, res) => {
    // const ipAddress = req.header('x-forwarded-for');
    res.status(200).json({ "ipAdress: ": ipAddress });
 });
->>>>>>> 0ca344b0752acd6dd468f3952e9ff2481aaabb18
+
 // ? Router inscription / connexion
 app.use('/m2l/user', routesUsers);
 

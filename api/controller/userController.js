@@ -11,7 +11,7 @@ const DETAILS_COMMANDE_DAO = new Details_CommandesDAO();
 
 
 exports.getUser = async (req, res) => {
-<<<<<<< HEAD
+console.log("ft_getUser")
 	let connexion;
 	try {
 		connexion = await ConnexionDAO.connect();
@@ -46,44 +46,6 @@ exports.getUser = async (req, res) => {
          		ConnexionDAO.disconnect(connexion);
 		}
 	}
-=======
-   let connexion;
-   try {
-      connexion = await ConnexionDAO.connect();
-      const { pseudo } = req.params;
-
-      const findWithPseudo = { pseudo: pseudo };
-      const user = await UTILISATEUR_DAO.find(connexion, findWithPseudo);
-
-      const utilisateur = {
-         "id": user[0][0].id,
-         "prenom": user[0][0].prenom,
-         "nom": user[0][0].nom,
-         "pseudo": user[0][0].pseudo,
-         "email": user[0][0].email,
-         "isAdmin": user[0][0].is_admin == 1 ? true : false
-      }
-
-      return res.status(200).json({
-         "success": true,
-         "message": "Informations de l'utilisateur",
-         "infos": {
-            "utilisateur": utilisateur
-         }
-      });
-   } catch (err) {
-      return res.status(404).json({
-         "success": false,
-         "message": err
-      });
-   } finally {
-      if (connexion) {
-         ConnexionDAO.disconnect(connexion);
-
-      }
-
-   }
->>>>>>> 0ca344b0752acd6dd468f3952e9ff2481aaabb18
 }
 
 
@@ -95,6 +57,7 @@ exports.getUser = async (req, res) => {
  * @return {Promise<void>} Une promesse qui contient le résultat.
  */
 exports.register = async (req, res) => {
+	console.log("ft_register");
    let connexion;
    try {
       connexion = await ConnexionDAO.connect();
@@ -161,7 +124,8 @@ exports.register = async (req, res) => {
  * @return {Promise<void>} - Une promesse qui contient le résultat.
  */
 exports.login = async (req, res) => {
-   let connexion;
+console.log("ft_login")   
+let connexion;
    try {
       connexion = await ConnexionDAO.connect();
       const currentDate = new Date();
@@ -246,7 +210,7 @@ exports.login = async (req, res) => {
                isAdmin: loggedUser.isAdmin,
                pseudo: loggedUser.pseudo,
                panier: panier[0][0].id,
-               jwt_token: jwt_token,
+               token: jwt_token,
             },
          },
       })

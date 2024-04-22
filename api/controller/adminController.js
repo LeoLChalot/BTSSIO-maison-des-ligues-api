@@ -613,7 +613,7 @@ exports.getAllCommandes = async (req, res) => {
          }
 
          // Calculate percentage change
-         const prevWeekCount = prevWeekOrders.length;
+         const prevWeekCount = prevWeekOrders.length > 0 ? prevWeekOrders.length : 0;
          const currentWeekCount = currentWeekOrders.length;
          const percentageChange = ((currentWeekCount - prevWeekCount) / prevWeekCount) * 100;
 

@@ -11,7 +11,7 @@ router.get('/pseudo/:pseudo', userController.getUser);
 
 // ? Login / Register
 router.post('/inscription', userController.register);
-router.post('/connexion', cookieParser(), userController.login);
+router.post('/connexion', userController.login);
 
 
 // ? Update by id
