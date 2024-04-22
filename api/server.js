@@ -25,7 +25,6 @@ app.use(
 );
 
 const whiteList = [
-<<<<<<< HEAD
    	'http://localhost:3000',
    	'http://127.0.0.1:5173',
    	'http://192.168.58.199:5173',
@@ -41,13 +40,12 @@ const whiteList = [
    	'http://localhost:50433',
    	'http://localhost:45820',
    	'http://127.0.0.1:43336'];
-=======
    'http://127.0.0.1:5173',
    'http://192.168.1.30:5173',
    'http://192.168.58.199:5173',
    'http://192.168.1.34:5173',
 ];
->>>>>>> 0ca344b0752acd6dd468f3952e9ff2481aaabb18
+
 
 
 const corsOptions = {
@@ -63,16 +61,10 @@ const corsOptions = {
 };
 
 app.use(express.json());
-// app.use(cors());
-app.use(cors(corsOptions));
+app.use(cors());
+// app.use(cors(corsOptions));
 
-<<<<<<< HEAD
-/** app.get("/", (req, res) => {
-   const root = __dirname;
-   res.sendFile(root + "/coucou.html");
-})
-*/
-=======
+
 app.get('/', (req, res) => {
    const ipAddress = req.socket.remoteAddress;
    // const ipAddress = req.header('x-forwarded-for');
