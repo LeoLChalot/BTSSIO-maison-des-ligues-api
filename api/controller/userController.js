@@ -235,6 +235,7 @@ exports.getAllUsers = async (req, res) => {
       const utilisateurDAO = new UtilisateurDAO();
 
       let result = await utilisateurDAO.find_all(connexion);
+	// let userList = result
       res.status(200).json(result[0]);
    } catch (error) {
       console.error('Error connecting user:', error);

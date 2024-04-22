@@ -27,20 +27,21 @@ app.use(
 
 
 const whiteList = [
-   'http://localhost:3000',
-   'http://127.0.0.1:5173',
-   'http://192.168.58.199:5173',
-   'http://192.168.1.35:3000',
-   'http://localhost:52905/',
-   'http://localhost:55605/',
-   'http://localhost:56976/',
-   'http://127.0.0.1:56976/',
-   'http://127.0.0.1:55605',
-   'http://192.168.1.34:5173',
-   'http://localhost:5173',
-   'http://localhost:50433',
-   'http://localhost:45820',
-   'http://127.0.0.1:43336'];
+   	'http://localhost:3000',
+   	'http://127.0.0.1:5173',
+   	'http://192.168.58.199:5173',
+   	'http://192.168.1.35:3000',
+   	'http://localhost:52905/',
+   	'http://localhost:55605/',
+   	'http://localhost:56976/',
+   	'http://127.0.0.1:56976/',
+	'http://192.168.1.34:5173',
+   	'http://127.0.0.1:55605',
+   	'http://192.168.1.34:5173',
+   	'http://localhost:5173',
+   	'http://localhost:50433',
+   	'http://localhost:45820',
+   	'http://127.0.0.1:43336'];
 
 
 const corsOptions = {
@@ -56,8 +57,8 @@ const corsOptions = {
 };
 
 app.use(express.json());
-app.use(cors());
-// app.use(cors(corsOptions));
+// app.use(cors());
+app.use(cors(corsOptions));
 
 /** app.get("/", (req, res) => {
    const root = __dirname;
