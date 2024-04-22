@@ -4,8 +4,9 @@ const path = require('path');
 const app = express();
 const PORT = 3000;
 // const IP_HOME = "192.168.1.30";
-const IP_ECOLE = "192.168.1.35"
-// const IP_ECOLE ="10.74.3.0:3000"
+// const IP_ECOLE = "192.168.1.35"
+// const IP_ECOLE ="192.168.206.199"
+
 const cookieParser = require('cookie-parser');
 
 
@@ -15,7 +16,6 @@ const routesBoutique = require('./routes/boutiqueRoute');
 const routesUsers = require('./routes/usersRoute');
 const routesAdmin = require('./routes/adminRoute');
 const routesPanier = require('./routes/panierRoute');
-const routesTests = require('./routes/testsRoute');
 
 app.use(
    cookieParser(null, {
@@ -24,9 +24,8 @@ app.use(
    })
 );
 
-
-
 const whiteList = [
+<<<<<<< HEAD
    	'http://localhost:3000',
    	'http://127.0.0.1:5173',
    	'http://192.168.58.199:5173',
@@ -42,6 +41,13 @@ const whiteList = [
    	'http://localhost:50433',
    	'http://localhost:45820',
    	'http://127.0.0.1:43336'];
+=======
+   'http://127.0.0.1:5173',
+   'http://192.168.1.30:5173',
+   'http://192.168.58.199:5173',
+   'http://192.168.1.34:5173',
+];
+>>>>>>> 0ca344b0752acd6dd468f3952e9ff2481aaabb18
 
 
 const corsOptions = {
@@ -60,11 +66,19 @@ app.use(express.json());
 // app.use(cors());
 app.use(cors(corsOptions));
 
+<<<<<<< HEAD
 /** app.get("/", (req, res) => {
    const root = __dirname;
    res.sendFile(root + "/coucou.html");
 })
 */
+=======
+app.get('/', (req, res) => {
+   const ipAddress = req.socket.remoteAddress;
+   // const ipAddress = req.header('x-forwarded-for');
+   res.status(200).json({ "ipAdress: ": ipAddress });
+});
+>>>>>>> 0ca344b0752acd6dd468f3952e9ff2481aaabb18
 // ? Router inscription / connexion
 app.use('/m2l/user', routesUsers);
 
@@ -77,31 +91,8 @@ app.use('/m2l/admin', routesAdmin);
 // ? Router Panier
 app.use('/m2l/panier', routesPanier);
 
-// ? Router Tests
-app.use('/m2l/tests', routesTests);
 
-/*
-// ? Router Error 400
-app.use((req, res, next) => {
-   res.status(400).json({ message: 'Bad request' });
-});
 
-// ? Router Error 401
-app.use((req, res, next) => {
-   res.status(401).json({ message: 'Unauthorized' });
-});
-
-// ? Router Error 404
-app.use((req, res) => {
-   res.status(404).json({ message: 'Page not found' });
-});
-
-// ? Router Error 500
-app.use((err, req, res, next) => {
-   console.error(err.stack);
-   res.status(500).json({ message: 'Internal server error' });
-});
-*/
 module.exports = app.listen(PORT, () => {
-   console.log(`Listen on ${IP_ECOLE}:${PORT}`);
+   console.log(`Listen on port ${PORT}`);
 });

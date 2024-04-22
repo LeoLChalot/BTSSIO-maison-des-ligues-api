@@ -11,6 +11,7 @@ const DETAILS_COMMANDE_DAO = new Details_CommandesDAO();
 
 
 exports.getUser = async (req, res) => {
+<<<<<<< HEAD
 	let connexion;
 	try {
 		connexion = await ConnexionDAO.connect();
@@ -45,6 +46,44 @@ exports.getUser = async (req, res) => {
          		ConnexionDAO.disconnect(connexion);
 		}
 	}
+=======
+   let connexion;
+   try {
+      connexion = await ConnexionDAO.connect();
+      const { pseudo } = req.params;
+
+      const findWithPseudo = { pseudo: pseudo };
+      const user = await UTILISATEUR_DAO.find(connexion, findWithPseudo);
+
+      const utilisateur = {
+         "id": user[0][0].id,
+         "prenom": user[0][0].prenom,
+         "nom": user[0][0].nom,
+         "pseudo": user[0][0].pseudo,
+         "email": user[0][0].email,
+         "isAdmin": user[0][0].is_admin == 1 ? true : false
+      }
+
+      return res.status(200).json({
+         "success": true,
+         "message": "Informations de l'utilisateur",
+         "infos": {
+            "utilisateur": utilisateur
+         }
+      });
+   } catch (err) {
+      return res.status(404).json({
+         "success": false,
+         "message": err
+      });
+   } finally {
+      if (connexion) {
+         ConnexionDAO.disconnect(connexion);
+
+      }
+
+   }
+>>>>>>> 0ca344b0752acd6dd468f3952e9ff2481aaabb18
 }
 
 
@@ -113,6 +152,7 @@ exports.register = async (req, res) => {
    }
 };
 
+
 /**
  * ## Connexion d'un utilisateur
  *
@@ -148,7 +188,7 @@ exports.login = async (req, res) => {
          message: "Le login est incorrect",
       })
 
-      utilisateur = {
+      loggedUser = {
          id: utilisateur[0][0].id,
          pseudo: utilisateur[0][0].pseudo,
          email: utilisateur[0][0].email,
@@ -156,23 +196,23 @@ exports.login = async (req, res) => {
          hash: utilisateur[0][0].mot_de_passe,
       };
 
-      console.log({ "UTILISATEUR": utilisateur })
+      console.log({ "UTILISATEUR": loggedUser })
 
       // ? Vérifier le mot de passe
-      if (!bcrypt.compareSync(mot_de_passe, utilisateur['hash'])) return res.status(404).json({
+      if (!bcrypt.compareSync(mot_de_passe, loggedUser.hash)) return res.status(404).json({
          success: false,
          message: 'Mot de passe incorrect',
       })
 
       // ? Récupérer le panier de l'utilisateur
-      const findWithIdUtilisateur = { id_utilisateur: utilisateur.id };
+      const findWithIdUtilisateur = { id_utilisateur: loggedUser.id };
       let panier = await PANIER_DAO.find(connexion, findWithIdUtilisateur);
 
       // ? Creer un nouveau panier si aucun panier n'est trouvé
       if (panier[0].length === 0) {
          const newPanier = {
             id: uuidv4(),
-            id_utilisateur: utilisateur.id,
+            id_utilisateur: loggedUser.id,
             date: currentDate,
          };
          await PANIER_DAO.create(connexion, newPanier);
@@ -184,9 +224,9 @@ exports.login = async (req, res) => {
       // ? Création du token
       const jwt_token = jwt.sign(
          {
-            email: utilisateur.email,
-            pseudo: utilisateur.pseudo,
-            role: utilisateur.isAdmin ? true : false,
+            email: loggedUser.email,
+            pseudo: loggedUser.pseudo,
+            role: loggedUser.isAdmin ? true : false,
             panier: panier[0][0].id,
          },
          process.env.SECRET_KEY,
@@ -203,8 +243,8 @@ exports.login = async (req, res) => {
          message: 'Utilisateur connecté',
          infos: {
             utilisateur: {
-               isAdmin: utilisateur.isAdmin ? true : false,
-               pseudo: utilisateur.pseudo,
+               isAdmin: loggedUser.isAdmin,
+               pseudo: loggedUser.pseudo,
                panier: panier[0][0].id,
                jwt_token: jwt_token,
             },
@@ -248,6 +288,7 @@ exports.getAllUsers = async (req, res) => {
 };
 
 
+
 /**
  * Get user details based on the provided email address.
  *
@@ -284,6 +325,7 @@ exports.getUserWithEmail = async (req, res) => {
       }
    }
 };
+
 
 
 /**

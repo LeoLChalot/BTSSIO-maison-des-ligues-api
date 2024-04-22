@@ -2,11 +2,15 @@ const ConnexionDAO = require('../models/ConnexionDAO');
 const UtilisateurDAO = require('../models/UtilisateurDAO');
 const CategorieDAO = require('../models/CategorieDAO');
 const ArticleDAO = require('../models/ArticleDAO');
+const CommandeDAO = require('../models/CommandeDAO');
+const Details_CommandesDAO = require('../models/Details_CommandesDAO');
 const { v4: uuidv4 } = require('uuid');
 const UTILISATEUR_DAO = new UtilisateurDAO();
 const CATEGORIE_DAO = new CategorieDAO();
 const ARTICLE_DAO = new ArticleDAO();
-
+const COMMANDE_DAO = new CommandeDAO();
+const DETAILS_COMMANDE_DAO = new Details_CommandesDAO();
+const moment = require('moment');
 
 /**
  * Retourne un utilisateur par son login.
@@ -308,12 +312,14 @@ exports.updateArticle = async (req, res) => {
       const connexion = await ConnexionDAO.connect();
       const articleDAO = new ArticleDAO();
 
+      const id = req.params.id;
+
       console.log(req)
 
       let path = req.file ? (req.file.path) : null
 
       if (path) path = path.replace(".undefined", ".jpg");
-      
+
 
       const article = {
          nom: req.body.nom || null,
@@ -322,7 +328,7 @@ exports.updateArticle = async (req, res) => {
          prix: req.body.prix || null,
          quantite: req.body.quantite || null,
          categorie_id: req.body.categorie_id || null,
-         id: req.body.id,
+         id: id,
       };
 
       const filteredArticleData = Object.fromEntries(
@@ -420,6 +426,7 @@ exports.deleteArticle = async (req, res) => {
  * @return {Object} JSON response with success status and either the list of users or an error message
  */
 exports.getAllUsers = async (req, res) => {
+   console.log("getAllUsers")
    let connexion;
    try {
       connexion = await ConnexionDAO.connect();
@@ -431,10 +438,28 @@ exports.getAllUsers = async (req, res) => {
             message: 'Aucun utilisateur',
          });
 
+      let usersList = [];
+
+      for (const userItem of users[0]) {
+         const user = {
+            "id": userItem.id,
+            "pseudo": userItem.pseudo,
+            "email": userItem.email,
+            "isAdmin": userItem.is_admin,
+            "nom": userItem.nom,
+            "prenom": userItem.prenom,
+            "registrationDate": userItem.register_date
+         }
+
+         usersList.push(user);
+      }
+
+      console.log(usersList)
+
       return res.status(200).json({
          success: true,
          message: 'Liste des utilisateurs',
-         users: users[0]
+         infos: { users: usersList }
       });
 
    } catch (error) {
@@ -446,4 +471,285 @@ exports.getAllUsers = async (req, res) => {
 }
 
 
+/**
+ * Updates the privilege of a user based on the provided request and response objects.
+ *
+ * @param {Object} req - The request object containing the user's ID in the params.
+ * @param {Object} res - The response object for sending the result of the update operation.
+ * @return {Promise} A promise that resolves with the updated user information if successful, or rejects with an error.
+ */
+exports.updatePrivilege = async (req, res) => {
+   try {
+      const connexion = await ConnexionDAO.connect();
+      const { id } = req.params;
 
+      const findWithId = {
+         id: id,
+      };
+      const user = await UTILISATEUR_DAO.find(
+         connexion,
+         findWithId
+      )
+      let isAdmin = !user[0][0].is_admin
+      if (user[0].length === 0) {
+         res.status(404).json({
+            success: false,
+            message: 'Utilisateur non trouvé',
+         });
+         return;
+      }
+      const result = await UTILISATEUR_DAO.update(
+         connexion,
+         {
+            is_admin: isAdmin,
+            id: user[0][0].id
+         },
+      )
+
+      if (result)
+         return res.status(200).json({
+            success: true,
+            message: 'Privilège mis à jour !',
+         });
+
+   } catch (error) {
+      console.error('Error connecting user:', error);
+      throw error;
+   } finally {
+      ConnexionDAO.disconnect();
+   }
+}
+
+
+/**
+ * Retrieves all the commandes from the database and returns them as a JSON response.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @return {Promise} A promise that resolves with the JSON response containing the list of commandes.
+ */
+exports.getAllCommandes = async (req, res) => {
+   let connexion;
+   try {
+      connexion = await ConnexionDAO.connect();
+      const commandes = await COMMANDE_DAO.find_all(connexion);
+
+      if (!commandes[0])
+         return res.status(404).json({
+            success: false,
+            message: 'Aucune commande',
+         });
+
+      let commandesList = [];
+      let current_week = new Date().getDay();
+
+      for (const commandeItem of commandes[0]) {
+
+         console.log(`ITEM => ${commandeItem.id_utilisateur}`)
+         const findWithId = {
+            id: commandeItem.id_utilisateur,
+         }
+         console.log(findWithId)
+         const user = await UTILISATEUR_DAO.find(
+            connexion,
+            findWithId
+         )
+
+         console.log(user)
+         const commande = {
+            "id": commandeItem.id,
+            "date": commandeItem.date,
+            "pseudo": user[0][0].pseudo,
+            "email": user[0][0].email,
+            "prix": commandeItem.prix_commande
+         }
+         commandesList.push(commande);
+      }
+
+      commandesList.sort(function (a, b) {
+         return new Date(b.date) - new Date(a.date);
+      });
+
+      function getOrdersByDateRange(startDate, endDate) {
+
+         // Filter orders based on the date range
+         const filteredOrders = commandesList.filter(order => {
+            const orderDate = new Date(order.date);
+            return orderDate >= startDate && orderDate <= endDate;
+         });
+
+         return filteredOrders;
+      }
+
+      let prev_week_commandesList = [];
+      let current_week_commandesList = [];
+
+
+      function calculatePercentageChange(commandesList) {
+         // Define week calculation function (assuming 'getWeek' is available)
+         const getWeek = (date) => {
+            const oneJan = new Date(date.getFullYear(), 0, 1);
+            return Math.ceil((((date - oneJan) / 86400000) + oneJan.getDay() + 1) / 7);
+         };
+         const current_week = getWeek(new Date())
+         // Initialize empty lists
+         let prevWeekOrders = [];
+         let currentWeekOrders = [];
+
+         // Iterate through orders and separate them by week
+         for (const commande of commandesList) {
+            const orderDate = new Date(commande.date);
+            const weekNumber = getWeek(orderDate);
+
+
+            console.log(weekNumber)
+            console.log(commande)
+
+            if (weekNumber === current_week) {
+               currentWeekOrders.push(commande);
+            } else if (weekNumber === current_week - 1) {
+               prevWeekOrders.push(commande);
+            }
+         }
+
+         // Calculate percentage change
+         const prevWeekCount = prevWeekOrders.length;
+         const currentWeekCount = currentWeekOrders.length;
+         const percentageChange = ((currentWeekCount - prevWeekCount) / prevWeekCount) * 100;
+
+         console.log({ "percentageChange": percentageChange })
+         console.log({ "prevWeekCount": prevWeekCount })
+         console.log({ "currentWeekCount": currentWeekCount })
+
+         const statistics = {
+            totalCommandes: commandesList.length,
+            nombreCommandesSemainePrecedente: prevWeekCount,
+            nombreCommandesSemaineActuelle: currentWeekCount,
+            pourcentage: parseInt(percentageChange.toFixed(0)),
+         }
+
+         return statistics;
+      }
+
+      const statistiques = calculatePercentageChange(commandesList)
+
+
+
+      return res.status(200).json({
+         success: true,
+         message: 'Liste des commandes',
+         infos: {
+            statistiques,
+            commandes: commandesList
+         }
+      });
+   } catch (error) {
+      console.error('Error connecting user:', error);
+      throw error;
+   } finally {
+      ConnexionDAO.disconnect();
+   }
+}
+
+/**
+ * Retrieves a specific commande by ID along with details and user information.
+ *
+ * @param {Object} req - The request object containing the ID of the commande.
+ * @param {Object} res - The response object for sending the commande details.
+ * @return {Promise} A promise that resolves with the JSON response of the commande details.
+ */
+exports.getCommandeById = async (req, res) => {
+   let connexion;
+   try {
+      connexion = await ConnexionDAO.connect();
+      const { id } = req.params;
+      const findCommandeWithId = {
+         id: id,
+      }
+      // ? GET ROW Commande
+      const commande = await COMMANDE_DAO.find(
+         connexion,
+         findCommandeWithId
+      )
+      if (!commande[0])
+         return res.status(404).json({
+            success: false,
+            message: 'Aucune commande',
+         });
+      const findUserWithId = {
+         id: commande[0][0].id_utilisateur,
+      }
+      // ? GET ROW Utilisateur
+      const user = await UTILISATEUR_DAO.find(
+         connexion,
+         findUserWithId
+      )
+      const findDetailsWithId = {
+         id_commande: commande[0][0].id_commande,
+      }
+      // ? GET ROWS Details
+      const productsCommande = await DETAILS_COMMANDE_DAO.find(
+         connexion,
+         findDetailsWithId
+      )
+
+      let detailCommande = []
+
+      console.log({ "Commandes": commande[0][0] })
+      console.log({ "IdUtilisateurs": commande[0][0].id_utilisateur })
+      console.log({ "User": user })
+      console.log({ "ProductsCommande": productsCommande[0] })
+
+      // ? FOREACH ProductsCommande
+      for (const row of productsCommande[0]) {
+         const findProductWithId = {
+            id: row.id_article,
+         }
+
+         console.log({ "findProductWithId": findProductWithId })
+
+         // ? GET ROW Article
+         const articleData = await ARTICLE_DAO.find(
+            connexion,
+            findProductWithId
+         )
+
+         console.log({ "articleData": articleData })
+
+         const article = {
+            "nom": articleData[0][0].nom,
+            "image": articleData[0][0].photo,
+            "quantite": row.quantite,
+            "prix": articleData[0][0].prix,
+         }
+
+
+         detailCommande.push(article)
+      }
+      return res.status(200).json({
+         success: true,
+         message: 'Commande',
+         infos: {
+            "date": commande[0][0].date,
+            "pseudo": user[0][0].pseudo,
+            "email": user[0][0].email,
+            "prix": commande[0][0].prix_commande,
+            "articles": detailCommande
+         }
+      })
+
+
+
+
+
+
+
+
+
+   } catch (error) {
+      console.error('Error connecting user:', error);
+      throw error;
+   } finally {
+      ConnexionDAO.disconnect();
+   }
+}
