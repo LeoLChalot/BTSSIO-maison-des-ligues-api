@@ -186,7 +186,7 @@ let connexion;
       console.log("PANIER: ", panier)
 
       // ? Création du token
-      const jwt_token = jwt.sign(
+      const token = jwt.sign(
          {
             email: loggedUser.email,
             pseudo: loggedUser.pseudo,
@@ -199,7 +199,7 @@ let connexion;
          }
       );
 
-      console.log('jwt_token:', jwt_token);
+      console.log('token:', token);
 
 
       return res.status(200).json({
@@ -210,7 +210,7 @@ let connexion;
                isAdmin: loggedUser.isAdmin,
                pseudo: loggedUser.pseudo,
                panier: panier[0][0].id,
-               token: jwt_token,
+               token: token,
             },
          },
       })

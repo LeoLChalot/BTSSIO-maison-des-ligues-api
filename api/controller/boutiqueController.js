@@ -3,30 +3,8 @@ const CategorieDAO = require('../models/CategorieDAO');
 const ArticleDAO = require('../models/ArticleDAO');
 const CATEGORIE_DAO = new CategorieDAO();
 const ARTICLE_DAO = new ArticleDAO();
+const ft = require('../lib/lib');
 
-const getCategoryById = async (connexion, id) => {
-   try {
-      const findById = {
-         id: id,
-      };
-
-      // console.log({"findById": findById});
-
-      const result = await CATEGORIE_DAO.find(connexion, findById);
-
-      // console.log(result);
-
-      if (result[0].length == 0) {
-         return { id: id, nom: 'Categorie non trouvée' };
-      }
-
-      return { id: id, nom: result[0][0].nom };
-
-   } catch (error) {
-      console.error('Error connecting shop:', error);
-      throw error;
-   }
-};
 
 /**
  * ## Retourne la liste des categories
@@ -190,7 +168,7 @@ exports.getAllArticles = async (req, res) => {
          message: 'Aucun articles en base de données',
       });
 
-      const categorie = await getCategoryById(connexion, result[0][0].categorie_id);
+      const categorie = await ft.getCategoryById(connexion, result[0][0].categorie_id);
 
       let articles = [];
       let nombreArticles = 0;
@@ -219,7 +197,7 @@ exports.getAllArticles = async (req, res) => {
       const categories = {};
 
       for (const data of result[0]) {
-         const categorieNom = (await getCategoryById(connexion, data.categorie_id)).nom;
+         const categorieNom = (await ft.getCategoryById(connexion, data.categorie_id)).nom;
          categories[categorieNom] = categories[categorieNom] ? categories[categorieNom] + 1 : 1;
       }
 
@@ -273,7 +251,7 @@ exports.getArticleById = async (req, res) => {
          message: 'Article non trouvé',
       });
 
-      const categorie = await getCategoryById(connexion, result[0][0].categorie_id);
+      const categorie = await ft.getCategoryById(connexion, result[0][0].categorie_id);
 
       const article = {
          id: result[0][0].id,
@@ -324,7 +302,7 @@ exports.getArticleByName = async (req, res) => {
          message: 'Article non trouvé',
       });
 
-      const categorie = await getCategoryById(connexion, result[0][0].categorie_id);
+      const categorie = await ft.getCategoryById(connexion, result[0][0].categorie_id);
 
       const article = {
          id: result[0][0].id,
@@ -390,7 +368,7 @@ exports.getArticlesByIdCategory = async (req, res) => {
          message: 'Categorie ou articles inexistants',
       });
 
-      const categorie = await getCategoryById(connexion, result[0][0].categorie_id);
+      const categorie = await ft.getCategoryById(connexion, result[0][0].categorie_id);
 
       let articles = [];
 

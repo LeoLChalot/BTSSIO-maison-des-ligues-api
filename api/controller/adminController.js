@@ -11,6 +11,8 @@ const ARTICLE_DAO = new ArticleDAO();
 const COMMANDE_DAO = new CommandeDAO();
 const DETAILS_COMMANDE_DAO = new Details_CommandesDAO();
 const moment = require('moment');
+const ft = require('../lib/lib');
+
 
 /**
  * Retourne un utilisateur par son login.
@@ -541,7 +543,6 @@ exports.getAllCommandes = async (req, res) => {
          });
 
       let commandesList = [];
-      let current_week = new Date().getDay();
 
       for (const commandeItem of commandes[0]) {
 
@@ -570,70 +571,11 @@ exports.getAllCommandes = async (req, res) => {
          return new Date(b.date) - new Date(a.date);
       });
 
-      function getOrdersByDateRange(startDate, endDate) {
-
-         // Filter orders based on the date range
-         const filteredOrders = commandesList.filter(order => {
-            const orderDate = new Date(order.date);
-            return orderDate >= startDate && orderDate <= endDate;
-         });
-
-         return filteredOrders;
-      }
 
       let prev_week_commandesList = [];
       let current_week_commandesList = [];
 
-
-      function calculatePercentageChange(commandesList) {
-         // Define week calculation function (assuming 'getWeek' is available)
-         const getWeek = (date) => {
-            const oneJan = new Date(date.getFullYear(), 0, 1);
-            return Math.ceil((((date - oneJan) / 86400000) + oneJan.getDay() + 1) / 7);
-         };
-         const current_week = getWeek(new Date())
-         // Initialize empty lists
-         let prevWeekOrders = [];
-         let currentWeekOrders = [];
-
-         // Iterate through orders and separate them by week
-         for (const commande of commandesList) {
-            const orderDate = new Date(commande.date);
-            const weekNumber = getWeek(orderDate);
-
-
-            console.log(weekNumber)
-            console.log(commande)
-
-            if (weekNumber === current_week) {
-               currentWeekOrders.push(commande);
-            } else if (weekNumber === current_week - 1) {
-               prevWeekOrders.push(commande);
-            }
-         }
-
-         // Calculate percentage change
-         const prevWeekCount = prevWeekOrders.length > 0 ? prevWeekOrders.length : 0;
-         const currentWeekCount = currentWeekOrders.length;
-         const percentageChange = ((currentWeekCount - prevWeekCount) / prevWeekCount) * 100;
-
-         console.log({ "percentageChange": percentageChange })
-         console.log({ "prevWeekCount": prevWeekCount })
-         console.log({ "currentWeekCount": currentWeekCount })
-
-         const statistics = {
-            totalCommandes: commandesList.length,
-            nombreCommandesSemainePrecedente: prevWeekCount,
-            nombreCommandesSemaineActuelle: currentWeekCount,
-            pourcentage: parseInt(percentageChange.toFixed(0)),
-         }
-
-         return statistics;
-      }
-
-      const statistiques = calculatePercentageChange(commandesList)
-
-
+      const statistiques = ft.calculatePercentageChange(commandesList)
 
       return res.status(200).json({
          success: true,
@@ -695,11 +637,6 @@ exports.getCommandeById = async (req, res) => {
 
       let detailCommande = []
 
-      console.log({ "Commandes": commande[0][0] })
-      console.log({ "IdUtilisateurs": commande[0][0].id_utilisateur })
-      console.log({ "User": user })
-      console.log({ "ProductsCommande": productsCommande[0] })
-
       // ? FOREACH ProductsCommande
       for (const row of productsCommande[0]) {
          const findProductWithId = {
@@ -714,7 +651,7 @@ exports.getCommandeById = async (req, res) => {
             findProductWithId
          )
 
-         console.log({ "articleData": articleData })
+         // console.log({ "articleData": articleData })
 
          const article = {
             "nom": articleData[0][0].nom,
@@ -730,6 +667,7 @@ exports.getCommandeById = async (req, res) => {
          success: true,
          message: 'Commande',
          infos: {
+            "id": commande[0][0].id,
             "date": commande[0][0].date,
             "pseudo": user[0][0].pseudo,
             "email": user[0][0].email,
@@ -737,14 +675,6 @@ exports.getCommandeById = async (req, res) => {
             "articles": detailCommande
          }
       })
-
-
-
-
-
-
-
-
 
    } catch (error) {
       console.error('Error connecting user:', error);

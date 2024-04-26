@@ -2,29 +2,29 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const cookieParser = require('cookie-parser');
 
+/*
+cookieAdmin = (req, res, next) => {
+  cookieParser()(req, res, () => {
+    const token = req.cookies.jwt_token;
+    console.log('Token from cookies:', token);
 
-// cookieAdmin = (req, res, next) => {
-//   cookieParser()(req, res, () => {
-//     const token = req.cookies.jwt_token;
-//     console.log('Token from cookies:', token);
+    try {
+      const user = jwt.verify(token, process.env.SECRET_KEY);
+      console.log('Decoded user from token:', user);
+      console.log('User role:', user.role);
 
-//     try {
-//       const user = jwt.verify(token, process.env.SECRET_KEY);
-//       console.log('Decoded user from token:', user);
-//       console.log('User role:', user.role);
+      (user.role == 1) ? next() : res.status(401).json({ message: "Unauthorized" });
+      // req.user = user;
+      // next();
+    } catch (err) {
+      console.error('Error verifying token:', err);
+      res.status(401).json({ message: "Unauthorized" });
+    }
+  });
+};
 
-//       (user.role == 1) ? next() : res.status(401).json({ message: "Unauthorized" });
-//       // req.user = user;
-//       // next();
-//     } catch (err) {
-//       console.error('Error verifying token:', err);
-//       res.status(401).json({ message: "Unauthorized" });
-//     }
-//   });
-// };
-
-// module.exports = cookieAdmin;
-
+module.exports = cookieAdmin;
+*/
 
 // Méthode avec les headers, c'est à dire le jwt est envoyé
 // dans le header de la requete via Authorization: Bearer <token>
@@ -44,6 +44,8 @@ const bearerAdmin = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
+
+    console.log("Decoded user from token:", decoded);
     (decoded.role == true) ? next() : res.status(401).json({ message: "Unauthorized" });
   } catch (err) {
     console.error('Error verifying token:', err);
