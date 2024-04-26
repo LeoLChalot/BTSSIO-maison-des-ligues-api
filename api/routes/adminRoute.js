@@ -52,6 +52,9 @@ router.put('/article/:id', upload.single('photo'), adminController.updateArticle
 router.delete('/categorie/:id', adminController.deleteCategory);
 router.delete('/article/:id', adminController.deleteArticle);
 
+// TODO
+// router.delete('/user/:id', adminController.deleteUser); 
+
 
 
 module.exports = router

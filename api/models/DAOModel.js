@@ -9,7 +9,7 @@
  * @method deleteAll(connexion) - Supprime tous les items de la table.
  */
 class DAOModel {
-   constructor() {}
+   constructor() { }
    /**
     * ## Retourne toutes les lignes de la table.
     * ---
@@ -23,13 +23,21 @@ class DAOModel {
     * model.find_all(connexion);
     * ```
     */
-   async find_all(connexion) {
+   async find_all(connexion, orderBy = null) {
+      console.log('find_all');
       try {
-         const query = `
+         let query = `
         SELECT * 
         FROM ${this.table} 
         `;
-        return await connexion.query(query);
+
+         if (orderBy != null) {
+            query += `ORDER BY ${orderBy}`
+         }
+
+         console.log({ "query": query });
+
+         return await connexion.query(query);
       } catch (error) {
          console.error('Error fetching articles:', error);
          throw error;
@@ -50,11 +58,11 @@ class DAOModel {
     * model.find(connexion, object);
     * ```
     */
-   async find(connexion, object) {
+   async find(connexion, object, orderBy = null) {
       const columns = Object.keys(object);
       const values = Object.values(object);
 
-      console.log({columns, values});
+      console.log({ columns, values });
       try {
          let query = '';
          if (columns.length > 1 && values.length > 1) {
@@ -69,6 +77,13 @@ class DAOModel {
          } else {
             query = `SELECT * FROM ${this.table} WHERE ${columns[0]} = ?`;
          }
+
+         if (orderBy != null) {
+            query += ` ORDER BY ${orderBy}`
+         }
+
+         console.log({ query });
+
          return await connexion.query(query, values);
       } catch (error) {
          console.error('Error deleting article:', error);
@@ -147,7 +162,7 @@ class DAOModel {
          const columns = Object.keys(object);
          const values = Object.values(object);
 
-         console.log({columns, values});
+         console.log({ columns, values });
 
          let query = `UPDATE ${this.table} SET `;
          for (let i = 0; i < columns.length - 1; i++) {

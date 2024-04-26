@@ -15,6 +15,7 @@ router.get('/categories/all', boutiqueController.getAllCategories)
 router.get('/articles/all', boutiqueController.getAllArticles)
 
 
+
 // ? Get One by id
 router.get('/categorie/id/:id', boutiqueController.getCategoryById)
 router.get('/article/id/:id', boutiqueController.getArticleById)

@@ -10,9 +10,11 @@ const getCategoryById = async (connexion, id) => {
          id: id,
       };
 
+      // console.log({"findById": findById});
+
       const result = await CATEGORIE_DAO.find(connexion, findById);
 
-      console.log(result);
+      // console.log(result);
 
       if (result[0].length == 0) {
          return { id: id, nom: 'Categorie non trouvée' };
@@ -168,9 +170,20 @@ exports.getCategoryByName = async (req, res) => {
  */
 exports.getAllArticles = async (req, res) => {
    let connexion;
+
+   const orderBy = req.query.orderBy;
+
    try {
       connexion = await ConnexionDAO.connect();
-      const result = await ARTICLE_DAO.find_all(connexion);
+      let result
+
+      if (orderBy) {
+         result = await ARTICLE_DAO.find_all(connexion, orderBy);
+      } else {
+         result = await ARTICLE_DAO.find_all(connexion);
+      }
+
+
 
       if (result[0].length === 0) return res.status(404).json({
          success: false,
@@ -204,13 +217,11 @@ exports.getAllArticles = async (req, res) => {
       }
 
       const categories = {};
+
       for (const data of result[0]) {
          const categorieNom = (await getCategoryById(connexion, data.categorie_id)).nom;
          categories[categorieNom] = categories[categorieNom] ? categories[categorieNom] + 1 : 1;
       }
-
-
-
 
       return res.status(200).json({
          success: true,
@@ -353,16 +364,27 @@ exports.getArticleByName = async (req, res) => {
  */
 exports.getArticlesByIdCategory = async (req, res) => {
    let connexion;
+
+   const orderBy = req.query.orderBy;
+
    try {
       connexion = await ConnexionDAO.connect();
+      let result;
 
       const findByIdCategorie = {
          categorie_id: req.params.id,
       };
-      const result = await ARTICLE_DAO.find(
-         connexion,
-         findByIdCategorie
-      );
+
+      if (orderBy) {
+         result = await ARTICLE_DAO.find(
+            connexion,
+            findByIdCategorie,
+            orderBy
+         );
+      } else {
+         result = await ARTICLE_DAO.find(connexion, findByIdCategorie);
+      }
+
       if (result[0].length === 0) return res.status(404).json({
          success: false,
          message: 'Categorie ou articles inexistants',
