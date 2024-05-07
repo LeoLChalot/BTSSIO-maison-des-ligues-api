@@ -10,7 +10,6 @@ const CATEGORIE_DAO = new CategorieDAO();
 const ARTICLE_DAO = new ArticleDAO();
 const COMMANDE_DAO = new CommandeDAO();
 const DETAILS_COMMANDE_DAO = new Details_CommandesDAO();
-const moment = require('moment');
 const ft = require('../lib/lib');
 
 
@@ -66,7 +65,7 @@ exports.getUserByLogin = async (req, res) => {
  * @param {Object} res - L'objet de réponse.
  * @return {JSON} L'objet de réponse et le message.
  */
-exports.deleteUserByPseudo = async (req, res) => {
+exports.deleteUser = async (req, res) => {
    try {
       const connexion = await ConnexionDAO.connect();
       const { pseudo } = req.body;
@@ -77,7 +76,7 @@ exports.deleteUserByPseudo = async (req, res) => {
          findWithPseudo
       );
 
-      if (user.length === 0)
+      if (user.length == 0)
          return res.status(404).json({
             message: 'Utilisateur non trouvé',
          });
@@ -126,7 +125,7 @@ exports.createCategory = async (req, res) => {
       };
       const exists = await CATEGORIE_DAO.find(
          connexion,
-         findWithNom
+         findWithNom,
       )
       if (exists[0].length > 0)
          return res
