@@ -77,11 +77,7 @@ const getCategoryById = async (connexion, id) => {
          id: id,
       };
 
-      // console.log({"findById": findById});
-
       const result = await CATEGORIE_DAO.find(connexion, findById);
-
-      // console.log(result);
 
       if (result[0].length == 0) {
          return { id: id, nom: 'Categorie non trouvée' };

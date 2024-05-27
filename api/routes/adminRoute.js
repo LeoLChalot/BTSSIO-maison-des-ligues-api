@@ -34,6 +34,7 @@ router.get('/commandes/all', adminController.getAllCommandes);
 
 
 // ? Get One by id
+router.get('/user/:login', adminController.getUserByLogin);
 router.get('/commande/:id', adminController.getCommandeById);
 
 

@@ -188,6 +188,7 @@ let connexion;
       // ? Création du token
       const token = jwt.sign(
          {
+            id: loggedUser.id,
             email: loggedUser.email,
             pseudo: loggedUser.pseudo,
             role: loggedUser.isAdmin ? true : false,
@@ -299,33 +300,37 @@ exports.getUserWithEmail = async (req, res) => {
  * @param {Object} res - The response object.
  * @return {Object} JSON response indicating success or failure of user deletion.
  */
-exports.deleteUserWithPseudo = async (req, res) => {
-   let connexion;
+exports.deleteUserWithId = async (req, res) => {
    try {
-      connexion = await ConnexionDAO.connect();
+      const connexion = await ConnexionDAO.connect();
+      const { id } = req.params;
 
-      const { pseudo } = req.params;
-      const findWithPseudo = { pseudo: pseudo };
+      const findWithId = { id: id };
+      const user = await UTILISATEUR_DAO.find(
+         connexion,
+         findWithId
+      );
 
-      let result = await UTILISATEUR_DAO.delete(connexion, findWithPseudo);
+      if (user.length == 0)
+         return res.status(404).json({
+            message: 'Utilisateur non trouvé',
+         });
 
-      if (!result) return res.status(404).json({
-         success: false,
-         message: "Cet utilisateur n'existe pas",
-      });
+      const result = await UTILISATEUR_DAO.delete(
+         connexion,
+         findWithId
+      );
 
       return res.status(200).json({
          success: true,
-         message: "Utilisateur supprimé",
+         message: 'Utilisateur supprimé',
       });
 
    } catch (error) {
       console.error('Error connecting user:', error);
       throw error;
    } finally {
-      if (connexion) {
-         ConnexionDAO.disconnect(connexion);
-      }
+      ConnexionDAO.disconnect();
    }
 };
 

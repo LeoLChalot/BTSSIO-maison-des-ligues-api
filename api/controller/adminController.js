@@ -23,31 +23,29 @@ const ft = require('../lib/lib');
 exports.getUserByLogin = async (req, res) => {
    try {
       const connexion = await ConnexionDAO.connect();
-      const login = req.body.login;
+      const login = req.params.login;
+      let utilisateur;
 
-      let utilisateur = await UTILISATEUR_DAO.find(
-         connexion,
-         'pseudo',
-         login
-      );
+      // Recherche de l'utilisateur par pseudo ou email
+      utilisateur = await UTILISATEUR_DAO.find(connexion, {
+         pseudo: login
+      });
 
-      if (utilisateur[0].length === 0) {
-         utilisateur = await UTILISATEUR_DAO.find(
-            connexion,
-            'email',
-            login
-         );
+      if (!utilisateur) {
+         utilisateur = await UTILISATEUR_DAO.find(connexion, {
+            email: login
+         });
       }
 
-      return (utilisateur[0].length === 0)
-         ? res.status(404).json({
-            success: false,
-            message: 'Utilisateur non trouvé',
-         })
-         : res.status(200).json({
+      return utilisateur
+         ? res.status(200).json({
             success: true,
             message: "Informations de l'utilisateur",
-            infos: { utilisateur: utilisateur[0][0] }
+            infos: utilisateur[0] 
+         })
+         : res.status(404).json({
+            success: false,
+            message: 'Utilisateur non trouvé',
          });
 
    } catch (error) {
@@ -63,39 +61,27 @@ exports.getUserByLogin = async (req, res) => {
  *
  * @param {Object} req - L'objet de requête.
  * @param {Object} res - L'objet de réponse.
- * @return {JSON} L'objet de réponse et le message.
+ * @return {Promise<void>} L'objet de réponse et le message.
  */
 exports.deleteUser = async (req, res) => {
+   const { id } = req.params;
    try {
       const connexion = await ConnexionDAO.connect();
-      const { id } = req.params;
-
-      const findWithId = { id: id };
-
-      if(await UTILISATEUR_DAO.find(
-         connexion,
-         findWithId
-      ).length === 0) {
+      const result = await UTILISATEUR_DAO.delete(connexion, { id });
+      if (!result) {
          return res.status(404).json({
             message: 'Utilisateur non trouvé',
          });
-      } else {
-         await UTILISATEUR_DAO.delete(
-            connexion,
-            findWithId
-         );
       }
-
-      return res.status(200).json({
+      res.status(200).json({
          success: true,
          message: 'Utilisateur supprimé',
       });
-
    } catch (error) {
       console.error('Error connecting user:', error);
       throw error;
    } finally {
-      ConnexionDAO.disconnect();
+      await ConnexionDAO.disconnect();
    }
 };
 
