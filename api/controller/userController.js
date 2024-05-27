@@ -11,41 +11,40 @@ const DETAILS_COMMANDE_DAO = new Details_CommandesDAO();
 
 
 exports.getUser = async (req, res) => {
-console.log("ft_getUser")
-	let connexion;
-	try {
-		connexion = await ConnexionDAO.connect();
-		const { pseudo } = req.params;
-		console.log(pseudo);
-		const findWithPseudo = {pseudo: pseudo};
-		const user = await UTILISATEUR_DAO.find(connexion, findWithPseudo);
+   console.log("ft_getUser")
+   let connexion;
+   try {
+      connexion = await ConnexionDAO.connect();
+      const { pseudo } = req.params;
+      console.log(pseudo);
+      const findWithPseudo = { pseudo: pseudo };
+      const user = await UTILISATEUR_DAO.find(connexion, findWithPseudo);
 
-		const utilisateur = {
-			"id": user[0][0].id,
-			"prenom": user[0][0].prenom,
-			"nom": user[0][0].nom,
-			"pseudo": user[0][0].pseudo,
-			"email":user[0][0].email,
-			"isAdmin": user[0][0].is_admin
-		 }
+      const utilisateur = {
+         "id": user[0][0].id,
+         "prenom": user[0][0].prenom,
+         "nom": user[0][0].nom,
+         "pseudo": user[0][0].pseudo,
+         "email": user[0][0].email,
+         "isAdmin": user[0][0].is_admin
+      }
 
-		return res.status(200).json({
-		"success": true,
-		"message": "Informations de l'utilisateur",
-		"infos": {
-			"utilisateur": utilisateur
-		}
-		});
-	}catch(err){
-		return res.status(404).json({
-			"success": false,
-			"message": err
-		});
-	}finally{
-		if (connexion) {
-         		ConnexionDAO.disconnect(connexion);
-		}
-	}
+      return res.status(200).json({
+         "success": true,
+         "message": "Informations de l'utilisateur",
+         "infos": {
+            "utilisateur": utilisateur
+         }
+      });
+   } catch (err) {
+      return res.status(404).json({
+         "success": false,
+         "message": err
+      });
+   } finally {
+      await ConnexionDAO.disconnect(connexion);
+
+   }
 }
 
 
@@ -57,7 +56,7 @@ console.log("ft_getUser")
  * @return {Promise<void>} Une promesse qui contient le résultat.
  */
 exports.register = async (req, res) => {
-	console.log("ft_register");
+   console.log("ft_register");
    let connexion;
    try {
       connexion = await ConnexionDAO.connect();
@@ -124,8 +123,8 @@ exports.register = async (req, res) => {
  * @return {Promise<void>} - Une promesse qui contient le résultat.
  */
 exports.login = async (req, res) => {
-console.log("ft_login")   
-let connexion;
+   console.log("ft_login")
+   let connexion;
    try {
       connexion = await ConnexionDAO.connect();
       const currentDate = new Date();
@@ -241,7 +240,7 @@ exports.getAllUsers = async (req, res) => {
       const utilisateurDAO = new UtilisateurDAO();
 
       let result = await utilisateurDAO.find_all(connexion);
-	// let userList = result
+      // let userList = result
       res.status(200).json(result[0]);
    } catch (error) {
       console.error('Error connecting user:', error);
@@ -352,7 +351,7 @@ exports.updateUserWithId = async (req, res) => {
       const findWithid = { id: id };
       console.log({ "REQ.BODY": req.body, "ID": id });
       const userData = await UTILISATEUR_DAO.find(connexion, findWithid);
-	console.log(userData);
+      console.log(userData);
       if (userData[0].length === 0) return res.status(404).json({
          success: false,
          message: "Cet utilisateur n'existe pas",
