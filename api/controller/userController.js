@@ -210,6 +210,7 @@ let connexion;
             utilisateur: {
                isAdmin: loggedUser.isAdmin,
                pseudo: loggedUser.pseudo,
+               id: loggedUser.id,
                panier: panier[0][0].id,
                token: token,
             },

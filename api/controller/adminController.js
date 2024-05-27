@@ -96,56 +96,41 @@ exports.createCategory = async (req, res) => {
    let connexion
    try {
       connexion = await ConnexionDAO.connect();
-      const nom = req.body.nom;
+      const { nom } = req.body;
 
-      if (!nom)
-         return res
-            .status(404)
-            .json({
-               success: false,
-               message: 'Categorie non trouvée',
-            });
+      if (!nom) {
+         return res.status(404).json({
+            success: false,
+            message: 'Categorie non définie',
+         });
+      }
 
-      const findWithNom = {
-         nom: nom,
-      };
-      const exists = await CATEGORIE_DAO.find(
-         connexion,
-         findWithNom,
-      )
-      if (exists[0].length > 0)
-         return res
-            .status(404)
-            .json({
-               success: false,
-               message: 'La catégorie existe déjà',
-            });
+      const findWithNom = { nom: nom };
+      const [exists] = await CATEGORIE_DAO.find(connexion, findWithNom);
+
+      if (exists.length > 0) {
+         return res.status(404).json({
+            success: false,
+            message: 'La catégorie existe déjà',
+         });
+      }
 
       const categorie = {
          id: uuidv4(),
-         nom: nom,
+         nom,
       };
 
-      const result = await CATEGORIE_DAO.create(
-         connexion,
-         categorie
-      );
+      await CATEGORIE_DAO.create(connexion, categorie);
 
-      return (result)
-         ? res.status(200).json({
-            success: true,
-            message: 'Categorie ajoutée !',
-         })
-         : res.status(404).json({
-            success: false,
-            message: 'Categorie non ajoutée',
-         });
-
+      return res.status(200).json({
+         success: true,
+         message: 'Categorie ajoutée !',
+      });
    } catch (error) {
       console.error('Error connecting shop:', error);
       throw error;
    } finally {
-      ConnexionDAO.disconnect();
+      await ConnexionDAO.disconnect();
    }
 };
 

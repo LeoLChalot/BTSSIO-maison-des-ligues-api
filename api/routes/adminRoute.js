@@ -39,8 +39,8 @@ router.get('/commande/:id', adminController.getCommandeById);
 
 
 // ? Create
-router.post('/categorie/new', adminController.createCategory);
-router.post('/article/new', upload.single('photo'), adminController.createArticle);
+router.post('/categorie', adminController.createCategory);
+router.post('/article', upload.single('photo'), adminController.createArticle);
 
 
 // ? Update role
