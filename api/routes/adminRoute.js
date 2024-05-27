@@ -53,7 +53,7 @@ router.delete('/categorie/:id', adminController.deleteCategory);
 router.delete('/article/:id', adminController.deleteArticle);
 
 // TODO
-// router.delete('/user/:id', adminController.deleteUser); 
+router.delete('/user/:id', adminController.deleteUser); 
 
 
 

@@ -59,7 +59,7 @@ exports.getUserByLogin = async (req, res) => {
 };
 
 /**
- * Supprime un utilisateur par son pseudo.
+ * Supprime un utilisateur par son id.
  *
  * @param {Object} req - L'objet de requête.
  * @param {Object} res - L'objet de réponse.
@@ -68,23 +68,23 @@ exports.getUserByLogin = async (req, res) => {
 exports.deleteUser = async (req, res) => {
    try {
       const connexion = await ConnexionDAO.connect();
-      const { pseudo } = req.body;
+      const { id } = req.params;
 
-      const findWithPseudo = { pseudo: pseudo };
-      const user = await UTILISATEUR_DAO.find(
+      const findWithId = { id: id };
+
+      if(await UTILISATEUR_DAO.find(
          connexion,
-         findWithPseudo
-      );
-
-      if (user.length == 0)
+         findWithId
+      ).length === 0) {
          return res.status(404).json({
             message: 'Utilisateur non trouvé',
          });
-
-      const result = await UTILISATEUR_DAO.delete(
-         connexion,
-         findWithPseudo
-      );
+      } else {
+         await UTILISATEUR_DAO.delete(
+            connexion,
+            findWithId
+         );
+      }
 
       return res.status(200).json({
          success: true,
