@@ -624,6 +624,7 @@ exports.getCommandeById = async (req, res) => {
          // console.log({ "articleData": articleData })
 
          const article = {
+            "id": articleData[0][0].id,
             "nom": articleData[0][0].nom,
             "image": articleData[0][0].photo,
             "quantite": row.quantite,

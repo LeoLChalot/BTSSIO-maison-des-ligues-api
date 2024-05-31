@@ -1,9 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const { v4: uuidv4 } = require('uuid');
-const cookieParser = require('cookie-parser');
-const cookieJwtAuth = require('../middleware/verifAdmin');
-const authenticator = require('../middleware/jwt-authentication');
 const panierController = require('../controller/panierController');
 
 // router.use(authenticator.auth);

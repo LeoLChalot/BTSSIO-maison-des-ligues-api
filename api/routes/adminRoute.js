@@ -1,10 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 
 // const cookieAdmin = require('../middleware/verifAdmin');
-const bearerAdmin = require('../middleware/verifAdmin');
+const verifAdmin = require('../middleware/verifAdmin');
 
 const MIME_TYPES = {
    'image/jpg': 'jpg',
@@ -26,7 +25,7 @@ const upload = multer({ storage: storage });
 const adminController = require('../controller/adminController');
 
 // router.use(cookieAdmin)
-router.use(bearerAdmin)
+router.use(verifAdmin)
 
 // ? Get All
 router.get('/users/all', adminController.getAllUsers);
@@ -43,7 +42,7 @@ router.post('/categorie', adminController.createCategory);
 router.post('/article', upload.single('photo'), adminController.createArticle);
 
 
-// ? Update role
+// ? Update
 router.put('/user/role/:id', adminController.updatePrivilege);
 router.put('/categorie/:id', adminController.updateCategory);
 router.put('/article/:id', upload.single('photo'), adminController.updateArticle);
