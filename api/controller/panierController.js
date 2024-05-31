@@ -129,7 +129,6 @@ exports.getCartContent = async (req, res) => {
          const categorie = await getCategoryById(connexion, fetchArticle[0][0].categorie_id);
 
          console.log({ "CATEGORIE": categorie })
-
          const article = {
             article: {
                id: fetchArticle[0][0].id,
