@@ -1,6 +1,7 @@
 const ConnexionDAO = require('../models/ConnexionDAO');
 const UtilisateurDAO = require('../models/UtilisateurDAO');
 const PanierDAO = require('../models/PanierDAO');
+const CommentaireDAO = require('../models/CommentaireDAO');
 const Details_CommandesDAO = require('../models/Details_CommandesDAO');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
@@ -8,6 +9,11 @@ const jwt = require('jsonwebtoken');
 const UTILISATEUR_DAO = new UtilisateurDAO();
 const PANIER_DAO = new PanierDAO();
 const DETAILS_COMMANDE_DAO = new Details_CommandesDAO();
+
+
+
+const CommentaireDAO = require('../models/CommentaireDAO');
+const COMMENTAIRE_DAO = new CommentaireDAO();
 
 
 exports.getUser = async (req, res) => {
@@ -485,3 +491,39 @@ exports.updatePasswordWithId = async (req, res) => {
       }
    }
 }
+
+
+exports.createCommentaire = async (req, res) => {
+   let connexion
+   try {
+      connexion = await ConnexionDAO.connect();
+      const { commentaire, id_article, id_utilisateur } = req.body;
+
+      if (!id_utilisateur) {
+         return res.status(404).json({
+            success: false,
+            message: 'Utilisateur introuvable',
+         });
+      }
+
+      const commentaireToAdd = {
+         id: uuidv4(),
+         commentaire: commentaire,
+         id_article: id_article,
+         id_utilisateur: id_utilisateur,
+      };
+
+      await COMMENTAIRE_DAO.create(connexion, commentaireToAdd);
+
+      return res.status(200).json({
+         success: true,
+         message: 'Commentaire ajouté !',
+      });
+   } catch (error) {
+      console.error('Error connecting shop:', error);
+      throw error;
+   } finally {
+      await ConnexionDAO.disconnect();
+   }
+};
+

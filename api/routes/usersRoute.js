@@ -22,4 +22,7 @@ router.put('/update/password/:id', verifUserIdentity, userController.updatePassw
 // ? Delete
 router.delete('/:id', verifUserIdentity, userController.deleteUserWithId);
 
+// ? Post Comment
+router.post('/createCommentaire', verifUserIdentity, userController.postComment);
+
 module.exports = router;
